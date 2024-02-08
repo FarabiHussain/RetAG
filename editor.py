@@ -20,7 +20,7 @@ def process(form, toPrinter):
         doc.save(os.getcwd() + "\\output\\" + init_data['output_file'])
 
         # open the word file
-        os.startfile(init_data['output_file'])
+        os.startfile(os.getcwd() + "\\output\\" + init_data['output_file'])
 
         # return the filename
         return init_data['output_file']

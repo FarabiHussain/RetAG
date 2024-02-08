@@ -155,7 +155,7 @@ def render_form():
         curr_payment['date'].place(x=x_offset + 130, y=y_offset + 10)
         y_offset += 34
 
-    # form['test_btn'].place(x=660, y=40)
+    form['test_btn'].place(x=660, y=40)
 
     form['today_btn'].place(x=250, y=50)
     y_offset = 370
