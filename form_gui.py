@@ -10,6 +10,7 @@ root.resizable(False, False)
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
+version = "beta-0.2.2"
 
 ##
 def handle_click_docx():
@@ -204,7 +205,7 @@ def init_form():
 
     root.geometry("800x540")
     root.iconbitmap(resource_path("assets\\logo.ico"))
-    root.title("AMCAIM Retainer Agreement Generator")
+    root.title("AMCAIM RetAG " + version)
 
     form['autofill_amount'] = StringVar()
     form['autofill_amount'].trace_add('write', autofill_first_amount)
