@@ -12,7 +12,7 @@ install dependencies:
 - [pyinstaller/](https://pypi.org/project/pyinstaller/)
 - [customtkinter](https://pypi.org/project/customtkinter/)
 - [docx2pdf](https://pypi.org/project/docx2pdf/)
-- [python-docx]([https://pypi.org/project/python-docx/)
+- [python-docx](https://pypi.org/project/python-docx/)
 
 then run the command:
 ```python -m PyInstaller main.py --onefile -w --icon=assets\logo.ico```
