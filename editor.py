@@ -16,11 +16,16 @@ def process(form, include_taxes):
                     for run in paragraph.runs:
                         run.text = run.text.replace(key, value)
 
+        output_dir = os.getcwd() + "\\output\\"
+
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
         # save the file to the output folder
-        doc.save(os.getcwd() + "\\output\\" + init_data['output_file'])
+        doc.save(output_dir + init_data['output_file'])
 
         # open the word file
-        os.startfile(os.getcwd() + "\\output\\" + init_data['output_file'])
+        os.startfile(output_dir + init_data['output_file'])
 
         # return the filename
         return init_data['output_file']
