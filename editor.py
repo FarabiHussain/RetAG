@@ -5,9 +5,9 @@ import datetime, os
 
 
 ## generate the docx with the input info
-def process(form, toPrinter):
+def process(form, include_taxes):
     try:
-        init_data = init(form)
+        init_data = init(form, include_taxes)
         doc = Document(init_data['input_file'])
 
         for paragraph in doc.paragraphs:
@@ -31,9 +31,9 @@ def process(form, toPrinter):
 
 
 ## initializes the fill info, output and input files
-def init(form):
+def init(form, include_taxes):
     today = datetime.datetime.now()
-    payment_plan = format_payments(form['payment_list'])
+    payment_plan = format_payments(form['payment_list'], include_taxes)
 
     input_data = {
         '[PAY_PLAN]': payment_plan,
@@ -60,7 +60,7 @@ def init(form):
 
 
 ## formats the list of data so that it can be displayed on the output document
-def format_payments(payments):
+def format_payments(payments, include_taxes):
     
     payments_string = "Payment of CAN $[TAXED] after signing the retainer and is non-refundable."
 
@@ -69,9 +69,15 @@ def format_payments(payments):
 
         for i in range(len(payments)):
             current_payment = payments[i]
-            current_amount_taxed = str(float(current_payment['amount']) + (float(current_payment['amount']) * 0.12))
+            current_amount_taxed = float(current_payment['amount'])
+
+            if (include_taxes):
+                print('adding taxes')
+                current_amount_taxed += float(current_payment['amount']) * 0.12
+
             current_payment_date = format_date(current_payment['date'])
-            payments_string += "Payment of CAN $" + current_amount_taxed + " to be made within " + current_payment_date + "."
+
+            payments_string += "Payment of CAN $" + str(current_amount_taxed) + " to be made within " + current_payment_date + "."
 
             if (i < len(payments) - 1):
                 payments_string += "\n"

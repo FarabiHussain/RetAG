@@ -1,6 +1,6 @@
-from tkinter import StringVar
+from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
-import form_logic, customtkinter as ctk, datetime as dt, win32print
+import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -29,6 +29,12 @@ def handle_click_print():
 
 
 ##
+def handle_click_output_folder():
+    output_dir = (os.getcwd() + "\\output")
+    os.startfile(output_dir)
+
+
+##
 def handle_generate(toPrinter):
 
     temp_list = []
@@ -47,13 +53,16 @@ def handle_generate(toPrinter):
         "application_fee": form['application_fee'].get(),
         "email_address": form['email_address'].get(),
         "phone_number": form['phone_number'].get(),
-        "payment_list": temp_list
+        "payment_list": temp_list,
     }
 
-    response = form_logic.generate(fill_info, toPrinter)
+    response = form_logic.generate(fill_info, form['include_taxes'].get(), toPrinter)
 
     if toPrinter == False:
-        status_string.set(str(response) + " created")
+        if response == False:
+            status_string.set("Error")
+        else:
+            status_string.set("Agreement created")
 
 
 ##
@@ -71,7 +80,16 @@ def handle_click_today():
 
 
 ##
-def handle_click_test():
+def handle_click_test_print():
+    global form, status_string, printer_selected
+    status_string.set("printing test")
+
+    win32print.SetDefaultPrinter(printer_selected.get())
+    win32api.ShellExecute(0, "print", os.getcwd() + '\\assets\\test.docx', None,  ".",  0)
+
+
+##
+def handle_click_test_data():
     global form, status_string
     status_string.set("dummy data placed")
 
@@ -155,20 +173,27 @@ def render_form():
         curr_payment['date'].place(x=x_offset + 130, y=y_offset + 10)
         y_offset += 34
 
-    form['test_btn'].place(x=660, y=40)
 
     form['today_btn'].place(x=250, y=50)
-    y_offset = 370
-    form['print_drp'].place(x=660, y=y_offset)
+    y_offset = 40
+    form['tax_switch'].place(x=660, y=y_offset)
+    y_offset += 210
+    form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
-    form['print_btn'].place(x=660, y=y_offset)
+    form['test_data_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['output_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['clear_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['printer_dropdown'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['docx_btn'].place(x=660, y=y_offset)
 
     form['frame_status'].place(x=20, y=490)
-    form['status_label'].place(x=10, y=2)
+    form['status_label'].place(x=10, y=1)
 
 
 ##
@@ -185,6 +210,7 @@ def init_form():
     form['autofill_amount'].trace_add('write', autofill_first_amount)
     form['autofill_date'] = StringVar()
     form['autofill_date'].trace_add('write', autofill_first_date)
+    form['include_taxes'] = BooleanVar(value=True)
 
     ## left frame
     form['frame_info'] = ctk.CTkFrame(master=root, width=300, height=440)
@@ -221,11 +247,14 @@ def init_form():
         })
 
     ## buttons
-    form['test_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_test, width=120)
-    form['print_drp'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, bg_color='transparent', variable=printer_selected, width=120)
-    form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_print, width=120)
+    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
+    form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
+    form['printer_dropdown'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected, width=120)
+    form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
     form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
-    form['clear_btn'] = ctk.CTkButton(master=root, text="Reset Form", border_width=0, corner_radius=4, fg_color="orange", text_color="#783100", command=handle_click_reset, width=120)
+    form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
+    form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=120)
     form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
 
     form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
