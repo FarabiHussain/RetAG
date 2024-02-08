@@ -1,10 +1,11 @@
 from docx import Document
+from docx2pdf import convert
+from CTkMessagebox import CTkMessagebox as popup
 import datetime, os
 
 
 ## generate the docx with the input info
-def generate(form):
-
+def process(form, toPDF, toPrinter):
     try:
         init_data = init(form)
         doc = Document(init_data['input_file'])
@@ -16,13 +17,23 @@ def generate(form):
                         run.text = run.text.replace(key, value)
 
         doc.save(init_data['output_file'])
-        os.startfile(init_data['output_file'])
-        print("[" + str(datetime.datetime.now()) + "]\t" + init_data['output_file'])
 
-        return True
+        if (toPDF):
+            convert(init_data['output_file'])
+            os.remove(init_data['output_file'])
+
+            init_data['output_file'] = init_data['output_file'].replace(".docx",".pdf")
+
+        if (toPrinter == False):
+            os.startfile(init_data['output_file'])
+
+        print("[" + str(datetime.datetime.now()) + "]\t" + init_data['output_file'])
+        # popup(title="Success", message="Successfully created " + str(init_data['output_file']), corner_radius=4)
+
+        return init_data['output_file']
 
     except Exception as e:
-        print(e)
+        popup(title="Failed", message=e, corner_radius=4)
         return False
 
 
@@ -55,7 +66,7 @@ def init(form):
     }
 
 
-##
+## formats the list of data so that it can be displayed on the output document
 def format_payments(payments):
     
     payments_string = "Payment of CAN $[TAXED] after signing the retainer and is non-refundable."
@@ -76,7 +87,7 @@ def format_payments(payments):
     return payments_string
 
 
-##
+## format date to `{date + suffix} {full month name} {year}`
 def format_date(date_string):
     temp = datetime.datetime.strptime(date_string, '%d/%m/%Y')
     return str(format_day(temp.strftime("%d")) + " " + temp.strftime("%B") + " " + temp.strftime("%Y"))
