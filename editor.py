@@ -1,12 +1,11 @@
 from docx import Document
-from docx2pdf import convert
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
 import datetime, os
 
 
 ## generate the docx with the input info
-def process(form, toPDF, toPrinter):
+def process(form, toPrinter):
     try:
         init_data = init(form)
         doc = Document(init_data['input_file'])
@@ -17,20 +16,13 @@ def process(form, toPDF, toPrinter):
                     for run in paragraph.runs:
                         run.text = run.text.replace(key, value)
 
-        doc.save(init_data['output_file'])
+        # save the file to the output folder
+        doc.save(os.getcwd() + "\\output\\" + init_data['output_file'])
 
-        if (toPDF):
-            convert(init_data['output_file'])
-            os.remove(init_data['output_file'])
+        # open the word file
+        os.startfile(init_data['output_file'])
 
-            init_data['output_file'] = init_data['output_file'].replace(".docx",".pdf")
-
-        if (toPrinter == False):
-            os.startfile(init_data['output_file'])
-
-        print("[" + str(datetime.datetime.now()) + "]\t" + init_data['output_file'])
-        # popup(title="Success", message="Successfully created " + str(init_data['output_file']), corner_radius=4)
-
+        # return the filename
         return init_data['output_file']
 
     except Exception as e:

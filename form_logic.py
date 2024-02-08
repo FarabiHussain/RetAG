@@ -34,16 +34,15 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, toPDF, toPrinter):
+def generate(fill_info, toPrinter):
 
     if (validate(fill_info) == True):
-        created_file = editor.process(fill_info, toPDF, toPrinter)
+        created_file = editor.process(fill_info, toPrinter) # assign 'test.docx' to print blank
 
         if (toPrinter != False):
-            # win32print.SetDefaultPrinter(toPrinter)
-            # win32api.ShellExecute(0, "print", 'test.docx', None,  ".",  0)
+            win32print.SetDefaultPrinter(toPrinter)
             win32api.ShellExecute(0, "print", created_file, None,  ".",  0)
-        
+
         return created_file
 
     return False
@@ -63,7 +62,5 @@ def reset(form_elements):
         form_elements['payment_list'][i]['amount'].insert("end", "")
         form_elements['payment_list'][i]['date'].delete(0, "end")
         form_elements['payment_list'][i]['date'].insert("end", "")
-
-    # popup(icon="info", title="Success", message="Form cleared", corner_radius=4)
 
     return form_elements

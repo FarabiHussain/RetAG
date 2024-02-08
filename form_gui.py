@@ -1,46 +1,35 @@
 from tkinter import StringVar
 from path_manager import resource_path
-import form_logic, customtkinter as ctk, datetime as dt, win32api, win32print, time
+import form_logic, customtkinter as ctk, datetime as dt, win32print
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 form = {}
 root = ctk.CTk()
 root.resizable(False, False)
-status_string = StringVar(value="ready")
+status_string = StringVar(value="Ready")
+printer_selected = StringVar(value=win32print.GetDefaultPrinter())
+printer_list = []
 
 ##
 def handle_click_docx():
     global status_string
     status_string.set('writing docx')
 
-    toPDF = False
     toPrinter = False
-    handle_generate(toPDF, toPrinter)
-
-
-##
-def handle_click_pdf():
-    global status_string
-    status_string.set('converting to pdf')
-
-    toPDF = True
-    toPrinter = False
-    handle_generate(toPDF, toPrinter)
+    handle_generate(toPrinter)
 
 
 ##
 def handle_click_print():
     global status_string
 
-    # all_printers = [printer[2] for printer in win32print.EnumPrinters(2)]
-    toPDF = False
-    status_string.set('printing on device: ' + win32print.GetDefaultPrinter())
-    handle_generate(toPDF, win32print.GetDefaultPrinter())
+    status_string.set('printing on device: ' + printer_selected.get())
+    handle_generate(printer_selected.get())
 
 
 ##
-def handle_generate(toPDF, toPrinter):
+def handle_generate(toPrinter):
 
     temp_list = []
     global form, status_string
@@ -61,7 +50,7 @@ def handle_generate(toPDF, toPrinter):
         "payment_list": temp_list
     }
 
-    response = form_logic.generate(fill_info, toPDF, toPrinter)
+    response = form_logic.generate(fill_info, toPrinter)
 
     if toPrinter == False:
         status_string.set(str(response) + " created")
@@ -166,12 +155,17 @@ def render_form():
         curr_payment['date'].place(x=x_offset + 130, y=y_offset + 10)
         y_offset += 34
 
-    form['today_btn'].place(x=250, y=50)
-    # form['test_btn'].place(x=660, y=80)
-    form['print_btn'].place(x=660, y=370)
-    form['clear_btn'].place(x=660, y=410)
-    form['pdf_btn'].place(x=660, y=450)
-    form['docx_btn'].place(x=660, y=490)
+    # form['today_btn'].place(x=250, y=50)
+    form['test_btn'].place(x=660, y=40)
+
+    y_offset = 370
+    form['print_drp'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['print_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['clear_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['docx_btn'].place(x=660, y=y_offset)
 
     form['frame_status'].place(x=20, y=490)
     form['status_label'].place(x=10, y=2)
@@ -179,12 +173,14 @@ def render_form():
 
 ##
 def init_form():
-    global root
+    global root, printer_list, form
+
+    printer_list = [printer[2] for printer in win32print.EnumPrinters(2) if 'PDF' not in printer[2]]
+
     root.geometry("800x540")
-    # root.iconbitmap(resource_path("assets\\logo.ico"))
+    root.iconbitmap(resource_path("assets\\logo.ico"))
     root.title("AMCAIM Retainer Agreement Generator")
 
-    global form
     form['autofill_amount'] = StringVar()
     form['autofill_amount'].trace_add('write', autofill_first_amount)
     form['autofill_date'] = StringVar()
@@ -226,9 +222,9 @@ def init_form():
 
     ## buttons
     form['test_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_test, width=120)
+    form['print_drp'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, bg_color='transparent', variable=printer_selected, width=120)
     form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_print, width=120)
     form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
-    form['pdf_btn'] = ctk.CTkButton(master=root, text="Save PDF", border_width=0, corner_radius=4, fg_color="#D02222", command=handle_click_pdf, width=120)
     form['clear_btn'] = ctk.CTkButton(master=root, text="Reset Form", border_width=0, corner_radius=4, fg_color="orange", text_color="#783100", command=handle_click_reset, width=120)
     form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
 
