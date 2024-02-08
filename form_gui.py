@@ -136,7 +136,7 @@ def render_form():
     form['email_address'] = ctk.CTkEntry(current_frame, width=280, border_width=0, corner_radius=4)
     form['phone_number'] = ctk.CTkEntry(current_frame, width=280, border_width=0, corner_radius=4)
 
-    # form['document_date'].insert(0, '2/7/2024')
+    # form['document_date'].insert(0, '7/2/2024')
     form['client_name'].insert(0, 'John Doe')
     form['application_type'].insert(0, 'Application')
     # form['application_fee'].insert(0, '100')

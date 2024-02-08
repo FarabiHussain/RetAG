@@ -57,23 +57,28 @@ def init(form):
 
 ##
 def format_payments(payments):
+    
     payments_string = "Payment of CAN $[TAXED] after signing the retainer and is non-refundable."
 
     if (len(payments) > 1):
-        payment_plan = ""
+        payments_string = ""
 
         for i in range(len(payments)):
             current_payment = payments[i]
-            current_amount_taxed = float(current_payment['amount']) + (float(current_payment['amount']) * 0.12)
+            current_amount_taxed = str(float(current_payment['amount']) + (float(current_payment['amount']) * 0.12))
             current_payment_date = format_date(current_payment['date'])
-            payment_plan += "Payment of CAN $" + str(current_payment['amount']) + " on " + str(current_payment['date']) + ".\n"
+            payments_string += "Payment of CAN $" + current_amount_taxed + " to be made within " + current_payment_date + "."
+
+            if (i < len(payments) - 1):
+                payments_string += "\n"
+
 
     return payments_string
 
 
 ##
 def format_date(date_string):
-    temp = datetime.strptime(date_string, '/%d/%m/%Y')
+    temp = datetime.datetime.strptime(date_string, '%d/%m/%Y')
     return str(format_day(temp.strftime("%d")) + " " + temp.strftime("%B") + " " + temp.strftime("%Y"))
 
 

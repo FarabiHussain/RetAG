@@ -48,6 +48,12 @@ def reset(form_elements):
     form_elements['email_address'].delete(0, "end")
     form_elements['phone_number'].delete(0, "end")
 
+    for i in range(len(form_elements['payment_list'])):
+        form_elements['payment_list'][i]['amount'].delete(0, "end")
+        form_elements['payment_list'][i]['amount'].insert("end", "")
+        form_elements['payment_list'][i]['date'].delete(0, "end")
+        form_elements['payment_list'][i]['date'].insert("end", "")
+
     popup(icon="info", title="Success", message="Form cleared", corner_radius=4)
 
     return form_elements
