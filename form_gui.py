@@ -181,7 +181,7 @@ def render_form():
 def init_form():
     global root
     root.geometry("800x540")
-    root.iconbitmap(resource_path("assets\\logo.ico"))
+    # root.iconbitmap(resource_path("assets\\logo.ico"))
     root.title("AMCAIM Retainer Agreement Generator")
 
     global form
