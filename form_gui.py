@@ -1,4 +1,5 @@
 from tkinter import StringVar
+from path_manager import resource_path
 import form_logic, customtkinter as ctk, datetime as dt, win32api, win32print, time
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -7,7 +8,6 @@ form = {}
 root = ctk.CTk()
 root.resizable(False, False)
 status_string = StringVar(value="ready")
-
 
 ##
 def handle_click_docx():
@@ -110,6 +110,30 @@ def handle_click_test():
 
 
 ##
+def autofill_first_amount(var, index, mode):
+    global form
+    amount_input = form['autofill_amount'].get()
+    (form['payment_list'][0]['amount']).delete(0, 'end')
+    (form['payment_list'][0]['amount']).insert(0, amount_input)
+
+
+##
+def autofill_first_date(var, index, mode):
+    global form
+
+    doc_date = form['document_date'].get()
+
+    for i in range(len(doc_date)):
+        if (doc_date[i].isdigit() or doc_date[i] == '/'):
+            pass
+        else:
+            form['document_date'].delete(0, 'end')
+            form['document_date'].insert(0, doc_date[0:-1])
+            (form['payment_list'][0]['date']).delete(0, 'end')
+            (form['payment_list'][0]['date']).insert(0, doc_date)
+
+
+##
 def render_form():
     global form
 
@@ -143,7 +167,7 @@ def render_form():
         y_offset += 34
 
     form['today_btn'].place(x=250, y=50)
-    form['test_btn'].place(x=660, y=80)
+    # form['test_btn'].place(x=660, y=80)
     form['print_btn'].place(x=660, y=370)
     form['clear_btn'].place(x=660, y=410)
     form['pdf_btn'].place(x=660, y=450)
@@ -154,34 +178,10 @@ def render_form():
 
 
 ##
-def autofill_first_amount(var, index, mode):
-    global form
-    amount_input = form['autofill_amount'].get()
-    (form['payment_list'][0]['amount']).delete(0, 'end')
-    (form['payment_list'][0]['amount']).insert(0, amount_input)
-
-
-##
-def autofill_first_date(var, index, mode):
-    global form
-
-    doc_date = form['document_date'].get()
-
-    for i in range(len(doc_date)):
-        if (doc_date[i].isdigit() or doc_date[i] == '/'):
-            pass
-        else:
-            form['document_date'].delete(0, 'end')
-            form['document_date'].insert(0, doc_date[0:-1])
-            (form['payment_list'][0]['date']).delete(0, 'end')
-            (form['payment_list'][0]['date']).insert(0, doc_date)
-
-
-##
 def init_form():
     global root
     root.geometry("800x540")
-    root.iconbitmap("./assets/logo.ico")
+    root.iconbitmap(resource_path("assets\\logo.ico"))
     root.title("AMCAIM Retainer Agreement Generator")
 
     global form

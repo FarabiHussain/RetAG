@@ -1,3 +1,3 @@
-import form_gui
+from form_gui import init_form
 
-form_gui.init_form()
+init_form()

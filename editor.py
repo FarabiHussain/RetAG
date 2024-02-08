@@ -1,6 +1,7 @@
 from docx import Document
 from docx2pdf import convert
 from CTkMessagebox import CTkMessagebox as popup
+from path_manager import resource_path
 import datetime, os
 
 
@@ -55,7 +56,7 @@ def init(form):
         '[PHONE]': format_phone(form["phone_number"])
     }
 
-    input_file = "./assets/template.docx"
+    input_file = resource_path("assets\\template.docx")
     output_file = "Retainer Agreement - " + (form["client"])
     output_file += ".docx"
 
