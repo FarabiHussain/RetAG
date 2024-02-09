@@ -1,10 +1,10 @@
 # Ret.A.G
-**RET**ainer **A**greement **G**enerator provides a GUI for AMCAIM staff that allows easy creation of retainer agreements when working with clients 
+`RET`ainer `A`greement `G`enerator provides a GUI for AMCAIM staff that allows easy creation of retainer agreements when working with clients 
 
 ## Usage
-- Download the latest build.
-- Unzip the contentents into its own folder.
-- Run the executable.
+- download the latest build.
+- unzip the contents.
+- run the executable.
 
 ## Build from source files
 install dependencies:
