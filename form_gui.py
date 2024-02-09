@@ -1,7 +1,7 @@
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
 import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print
-ctk.set_appearance_mode("system")
+ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
 form = {}
@@ -38,7 +38,7 @@ def handle_click_print():
     global status_string
 
     status_string.set('printing on device: ' + printer_selected.get())
-    handle_generate(printer_selected.get())
+    handle_generate(printer_selected.get(), False)
 
 
 ##
@@ -114,11 +114,6 @@ def handle_click_test_data():
     form['application_fee'].delete(0, 'end')
     form['email_address'].delete(0, 'end')
     form['phone_number'].delete(0, 'end')
-
-    form['payment_list'][0]['date'].delete(0, 'end')
-    form['payment_list'][1]['amount'].delete(0, 'end')
-    form['payment_list'][1]['date'].delete(0, 'end')
-
     form['document_date'].insert(0, '15/2/2024')
     form['client_name'].insert(0, 'John Doe')
     form['application_type'].insert(0, 'Application')
@@ -126,6 +121,9 @@ def handle_click_test_data():
     form['email_address'].insert(0, 'email@dummy.com')
     form['phone_number'].insert(0, '0123456789')
 
+    form['payment_list'][0]['date'].delete(0, 'end')
+    form['payment_list'][1]['amount'].delete(0, 'end')
+    form['payment_list'][1]['date'].delete(0, 'end')
     form['payment_list'][0]['date'].insert(0, '15/2/2024')
     form['payment_list'][1]['amount'].insert(0, '100')
     form['payment_list'][1]['date'].insert(0, '15/3/2024')
@@ -161,12 +159,16 @@ def autofill_first_date(var, index, mode):
 
     for i in range(len(doc_date)):
         if (doc_date[i].isdigit() or doc_date[i] == '/'):
-            pass
+            (form['payment_list'][0]['date']).delete(0, 'end')
+            (form['payment_list'][0]['date']).insert(0, doc_date)
         else:
             form['document_date'].delete(0, 'end')
             form['document_date'].insert(0, doc_date[0:-1])
             (form['payment_list'][0]['date']).delete(0, 'end')
-            (form['payment_list'][0]['date']).insert(0, doc_date)
+            (form['payment_list'][0]['date']).insert(0, doc_date[0:-1])
+
+    if (len(doc_date) == 0):
+        (form['payment_list'][0]['date']).delete(0, 'end')
 
 
 ##

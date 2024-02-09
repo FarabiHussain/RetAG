@@ -1,4 +1,4 @@
-import editor, re, win32api, win32print
+import editor, re
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -38,13 +38,7 @@ def validate(fill_info):
 ## runs the editor and displays message
 def generate(fill_info, include_taxes, toPrinter, toPdf):
     if (validate(fill_info) == True):
-        created_file = editor.process(fill_info, include_taxes, toPdf)
-
-        if (toPrinter != False):
-            win32print.SetDefaultPrinter(toPrinter)
-            win32api.ShellExecute(0, "print", created_file, None,  ".",  0)
-
-        return created_file
+        return editor.process(fill_info, include_taxes, toPrinter, toPdf)
 
     return False
 

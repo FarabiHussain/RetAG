@@ -2,11 +2,11 @@ from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
 from docx2pdf import convert
-import datetime, os, sys
+import datetime, os, sys, win32api, win32print
 
 
 ## generate the docx with the input info
-def process(form, include_taxes, toPdf):
+def process(form, include_taxes, toPrinter, toPdf):
     try:
         init_data = init(form, include_taxes)
         doc = Document(init_data['input_file'])
@@ -25,11 +25,15 @@ def process(form, include_taxes, toPdf):
         # save the file to the output folder
         doc.save(output_dir + init_data['output_file'])
 
-        if toPdf == True:
+        if toPdf:
             sys.stderr = open(os.devnull, "w")
             convert(output_dir + init_data['output_file'])
             os.remove(output_dir + init_data['output_file'])
             init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
+
+        if toPrinter:
+            win32print.SetDefaultPrinter(toPrinter)
+            win32api.ShellExecute(0, "print", init_data['output_file'], None,  ".",  0)
 
         # open the word file
         os.startfile(output_dir + init_data['output_file'])
