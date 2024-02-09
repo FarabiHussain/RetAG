@@ -12,13 +12,25 @@ printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
 version = "beta-0.2.2"
 
+
 ##
 def handle_click_docx():
     global status_string
     status_string.set('writing docx')
 
     toPrinter = False
-    handle_generate(toPrinter)
+    toPdf = False
+    handle_generate(toPrinter, toPdf)
+
+
+##
+def handle_click_pdf():
+    global status_string
+    status_string.set('creating pdf')
+
+    toPrinter = False
+    toPdf = True
+    handle_generate(toPrinter, toPdf)
 
 
 ##
@@ -36,7 +48,7 @@ def handle_click_output_folder():
 
 
 ##
-def handle_generate(toPrinter):
+def handle_generate(toPrinter, toPdf):
 
     temp_list = []
     global form, status_string
@@ -57,7 +69,7 @@ def handle_generate(toPrinter):
         "payment_list": temp_list,
     }
 
-    response = form_logic.generate(fill_info, form['include_taxes'].get(), toPrinter)
+    response = form_logic.generate(fill_info, form['include_taxes'].get(), toPrinter, toPdf)
 
     if toPrinter == False:
         if response == False:
@@ -178,7 +190,7 @@ def render_form():
     form['today_btn'].place(x=250, y=50)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
-    y_offset += 210
+    y_offset += 170
     form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['test_data_btn'].place(x=660, y=y_offset)
@@ -192,6 +204,8 @@ def render_form():
     form['print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['docx_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['pdf_btn'].place(x=660, y=y_offset)
 
     form['frame_status'].place(x=20, y=490)
     form['status_label'].place(x=10, y=1)
@@ -248,15 +262,16 @@ def init_form():
         })
 
     ## buttons
-    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
-    form['printer_dropdown'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected, width=120)
+    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
     form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
-    form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
     form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
+    form['printer_dropdown'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected, width=120)
     form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=120)
-    form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
+    form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
+    form['pdf_btn'] = ctk.CTkButton(master=root, text="Save PDF", border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=120)
 
     form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
     current_frame = form['frame_status']

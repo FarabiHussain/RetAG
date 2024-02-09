@@ -1,11 +1,12 @@
 from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
+from docx2pdf import convert as createPDF
 import datetime, os
 
 
 ## generate the docx with the input info
-def process(form, include_taxes):
+def process(form, include_taxes, toPdf):
     try:
         init_data = init(form, include_taxes)
         doc = Document(init_data['input_file'])
@@ -24,13 +25,19 @@ def process(form, include_taxes):
         # save the file to the output folder
         doc.save(output_dir + init_data['output_file'])
 
+        if toPdf == True:
+            init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
+            # createPDF(init_data['output_file'])
+            # os.remove(init_data['output_file'].replace(".pdf", ".docx"))
+
         # open the word file
-        os.startfile(output_dir + init_data['output_file'])
+        # os.startfile(output_dir + init_data['output_file'])
 
         # return the filename
         return init_data['output_file']
 
     except Exception as e:
+        print(e)
         popup(title="Failed", message=e, corner_radius=4)
         return False
 
@@ -67,7 +74,7 @@ def init(form, include_taxes):
 ## formats the list of data so that it can be displayed on the output document
 def format_payments(payments, include_taxes):
     
-    payments_string = "Payment of CAN $[TAXED] after signing the retainer and is non-refundable."
+    payments_string = "Payment of CAN $[TAXED] to be paid within " + format_date(payments[0]['date']) + ", after signing the retainer, is non-refundable."
 
     if (len(payments) > 1):
         payments_string = ""
@@ -77,7 +84,6 @@ def format_payments(payments, include_taxes):
             current_amount_taxed = float(current_payment['amount'])
 
             if (include_taxes):
-                print('adding taxes')
                 current_amount_taxed += float(current_payment['amount']) * 0.12
 
             current_payment_date = format_date(current_payment['date'])

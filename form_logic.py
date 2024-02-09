@@ -34,10 +34,10 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, include_taxes, toPrinter):
+def generate(fill_info, include_taxes, toPrinter, toPdf):
 
     if (validate(fill_info) == True):
-        created_file = editor.process(fill_info, include_taxes) # assign 'test.docx' to print blank
+        created_file = editor.process(fill_info, include_taxes, toPdf)
 
         if (toPrinter != False):
             win32print.SetDefaultPrinter(toPrinter)
