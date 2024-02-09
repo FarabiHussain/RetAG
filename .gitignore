@@ -3,3 +3,4 @@
 /dist
 *.spec
 /output/*.docx
+/output/*.pdf
