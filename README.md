@@ -1,5 +1,5 @@
 # Ret.A.G
-*RET*ainer *A*greement *G*enerator provides a GUI for AMCAIM staff that allows easy creation of retainer agreements when working with clients 
+**RET**ainer **A**greement **G**enerator provides a GUI for AMCAIM staff that allows easy creation of retainer agreements when working with clients 
 
 ## Usage
 - Download the latest build.
