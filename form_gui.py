@@ -90,6 +90,8 @@ def handle_click_today():
     global form
     form['document_date'].delete(0, "end")
     form['document_date'].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
+    (form['payment_list'][0]['date']).delete(0, "end")
+    (form['payment_list'][0]['date']).insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
 
 
 ##
@@ -127,6 +129,20 @@ def handle_click_test_data():
     form['payment_list'][0]['date'].insert(0, '15/2/2024')
     form['payment_list'][1]['amount'].insert(0, '100')
     form['payment_list'][1]['date'].insert(0, '15/3/2024')
+
+
+##
+def handle_click_500dollars():
+    global form
+    form['application_fee'].delete(0, "end")
+    form['application_fee'].insert(0, 500)
+
+
+##
+def handle_click_1000dollars():
+    global form
+    form['application_fee'].delete(0, "end")
+    form['application_fee'].insert(0, 1000)
 
 
 ##
@@ -188,6 +204,8 @@ def render_form():
 
 
     form['today_btn'].place(x=250, y=50)
+    form['500_btn'].place(x=180, y=260)
+    form['1000_btn'].place(x=250, y=260)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 170
@@ -255,20 +273,17 @@ def init_form():
     form['date_label'] = ctk.CTkLabel(current_frame, text="Date (DD/MM/YYYY)")
 
     form['payment_list'] = []
-    for index in range(12):
-        if (index == 0):
-            form['payment_list'].append({
-                'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
-                'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4, textvariable=form['autofill_date'])
-            })
-        else:
-            form['payment_list'].append({
-                'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
-                'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
-            })
+    for _ in range(12):
+        form['payment_list'].append({
+            'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
+            'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
+        })
 
     ## buttons
     form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
+    form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_500dollars, width=60, height=25)
+    form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_1000dollars, width=60, height=25)
+
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
