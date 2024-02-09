@@ -10,7 +10,7 @@ root.resizable(False, False)
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.3-beta.1"
+version = "v0.4-beta.0"
 
 
 ##
