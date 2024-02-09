@@ -19,21 +19,17 @@ def validate(fill_info):
         if (key == "payment_list"):
             for index in range(len(fill_info['payment_list'])):
                 current_pay = fill_info['payment_list'][index]
-                print(current_pay)
 
                 if (len(current_pay['amount']) == 0 and len(current_pay['date']) == 0):
-                    popup(icon="cancel", title="Error", message="Payment #" + str(index + 1) + " is incomplete", corner_radius=4)
-                    print("Payment " + str(index) + " contains empty field(s)")
+                    popup(icon="cancel", title="Error", message="Payment " + str(index + 1) + " contains empty field(s)", corner_radius=4)
                     return False
 
-                if (re.search('[a-zA-Z]', current_pay['amount'])):
-                    popup(icon="cancel", title="Error", message="Invalid input in payment #" + str(index + 1), corner_radius=4)
-                    print("Invalid amount in payment " + str(index))
+                if (re.match('^[0-9]*$', current_pay['amount']) == False):
+                    popup(icon="cancel", title="Error", message="Invalid amount in payment #" + str(index + 1), corner_radius=4)
                     return False
 
                 if (re.match('^[0-3]{0,1}[0-9]{1}' + '/' + '[0-2]{0,1}[0-9]{1}' + '/' + '20[0-9]{1}[0-9]{1}$', current_pay['date']) == None):
-                    popup(icon="cancel", title="Error", message="Invalid date format in payment #" + str(index + 1), corner_radius=4)
-                    print("Invalid date in payment " + str(index))
+                    popup(icon="cancel", title="Error", message="Invalid date in payment #" + str(index + 1), corner_radius=4)
                     return False
 
     return True

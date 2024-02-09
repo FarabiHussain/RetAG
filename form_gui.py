@@ -250,10 +250,10 @@ def init_form():
     current_frame = form['frame_info']
 
     form['client_info_label'] = ctk.CTkLabel(root, text="Client Information")
-    form['document_date_label'] = ctk.CTkLabel(current_frame, text="Date on Document (DD/MM/YYYY)")
+    form['document_date_label'] = ctk.CTkLabel(current_frame, text="Date on document (DD/MM/YYYY)")
     form['client_name_label'] = ctk.CTkLabel(current_frame, text="Client name")
     form['application_type_label'] = ctk.CTkLabel(current_frame, text="Application type")
-    form['application_fee_label'] = ctk.CTkLabel(current_frame, text="Application Fee")
+    form['application_fee_label'] = ctk.CTkLabel(current_frame, text="Application fee")
     form['email_address_label'] = ctk.CTkLabel(current_frame, text="Email address")
     form['phone_number_label'] = ctk.CTkLabel(current_frame, text="Phone number")
 
