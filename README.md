@@ -15,4 +15,4 @@ install dependencies:
 - [python-docx](https://pypi.org/project/python-docx/)
 
 then run the command:
-```python -m PyInstaller main.py --onefile -w --icon=assets\logo.ico```
+```python -m PyInstaller main.py --onefile -w --icon=assets\logo.ico --name="RetAG"```
