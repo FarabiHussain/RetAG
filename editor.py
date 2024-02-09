@@ -1,8 +1,8 @@
 from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
-from docx2pdf import convert as createPDF
-import datetime, os
+from docx2pdf import convert
+import datetime, os, sys
 
 
 ## generate the docx with the input info
@@ -26,12 +26,13 @@ def process(form, include_taxes, toPdf):
         doc.save(output_dir + init_data['output_file'])
 
         if toPdf == True:
+            sys.stderr = open(os.devnull, "w")
+            convert(output_dir + init_data['output_file'])
+            os.remove(output_dir + init_data['output_file'])
             init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
-            # createPDF(init_data['output_file'])
-            # os.remove(init_data['output_file'].replace(".pdf", ".docx"))
 
         # open the word file
-        # os.startfile(output_dir + init_data['output_file'])
+        os.startfile(output_dir + init_data['output_file'])
 
         # return the filename
         return init_data['output_file']
@@ -73,7 +74,6 @@ def init(form, include_taxes):
 
 ## formats the list of data so that it can be displayed on the output document
 def format_payments(payments, include_taxes):
-    
     payments_string = "Payment of CAN $[TAXED] to be paid within " + format_date(payments[0]['date']) + ", after signing the retainer, is non-refundable."
 
     if (len(payments) > 1):
@@ -87,12 +87,10 @@ def format_payments(payments, include_taxes):
                 current_amount_taxed += float(current_payment['amount']) * 0.12
 
             current_payment_date = format_date(current_payment['date'])
-
             payments_string += "Payment of CAN $" + str(current_amount_taxed) + " to be made within " + current_payment_date + "."
 
             if (i < len(payments) - 1):
                 payments_string += "\n"
-
 
     return payments_string
 

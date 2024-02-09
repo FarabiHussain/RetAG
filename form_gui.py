@@ -1,7 +1,7 @@
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
 import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("system")
 ctk.set_default_color_theme("dark-blue")
 
 form = {}
@@ -10,7 +10,7 @@ root.resizable(False, False)
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "beta-0.2.2"
+version = "v0.3-beta.1"
 
 
 ##
@@ -255,11 +255,17 @@ def init_form():
     form['date_label'] = ctk.CTkLabel(current_frame, text="Date (DD/MM/YYYY)")
 
     form['payment_list'] = []
-    for _ in range(12):
-        form['payment_list'].append({
-            'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
-            'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
-        })
+    for index in range(12):
+        if (index == 0):
+            form['payment_list'].append({
+                'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
+                'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4, textvariable=form['autofill_date'])
+            })
+        else:
+            form['payment_list'].append({
+                'amount': ctk.CTkEntry(current_frame, width=90, border_width=0, corner_radius=4),
+                'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
+            })
 
     ## buttons
     form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
