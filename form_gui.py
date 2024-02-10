@@ -10,7 +10,7 @@ root.resizable(False, False)
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.4-beta.2"
+version = "v0.5-beta.0"
 
 
 ##
@@ -143,6 +143,11 @@ def handle_click_1000dollars():
     form['application_fee'].insert(0, 1000)
 
 
+def handle_click_advance():
+    global form
+    form['payment_list'][0]['date'].delete(0, 'end')
+    form['payment_list'][0]['date'].insert(0, 'advance')
+
 ##
 def autofill_first_amount(var, index, mode):
     global form
@@ -208,6 +213,7 @@ def render_form():
     form['today_btn'].place(x=250, y=50)
     form['500_btn'].place(x=180, y=260)
     form['1000_btn'].place(x=250, y=260)
+    form['advance_btn'].place(x=568, y=67)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 170
@@ -282,9 +288,10 @@ def init_form():
         })
 
     ## buttons
-    form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_today, width=60, height=25)
-    form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_500dollars, width=60, height=25)
-    form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, fg_color="#383FBC", bg_color='transparent', command=handle_click_1000dollars, width=60, height=25)
+    form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_today, width=60, height=25)
+    form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_500dollars, width=60, height=25)
+    form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, bg_color='transparent', command=handle_click_1000dollars, width=60, height=25)
+    form['advance_btn'] = ctk.CTkButton(master=root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
 
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)

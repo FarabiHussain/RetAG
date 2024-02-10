@@ -4,6 +4,8 @@ from CTkMessagebox import CTkMessagebox as popup
 
 ## validates the form
 def validate(fill_info):
+    valid_date_regex = '^[0-3]{0,1}[0-9]{1}' + '/' + '[0-2]{0,1}[0-9]{1}' + '/' + '20[0-9]{1}[0-9]{1}$'
+
     for key, val in fill_info.items():
 
         if (len(fill_info[key]) < 1):
@@ -28,7 +30,7 @@ def validate(fill_info):
                     popup(icon="cancel", title="Error", message="Invalid amount in payment #" + str(index + 1), corner_radius=4)
                     return False
 
-                if (re.match('^[0-3]{0,1}[0-9]{1}' + '/' + '[0-2]{0,1}[0-9]{1}' + '/' + '20[0-9]{1}[0-9]{1}$', current_pay['date']) == None):
+                if (index == 0 and current_pay['date'] != "advance") or (re.match(valid_date_regex, current_pay['date']) == None):
                     popup(icon="cancel", title="Error", message="Invalid date in payment #" + str(index + 1), corner_radius=4)
                     return False
 

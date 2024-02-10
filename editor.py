@@ -78,7 +78,7 @@ def init(form, include_taxes):
 
 ## formats the list of data so that it can be displayed on the output document
 def format_payments(payments, include_taxes):
-    payments_string = "Payment of CAN $[TAXED] to be paid within " + format_date(payments[0]['date']) + ", after signing the retainer, is non-refundable."
+    payments_string = "Payment of CAN $[TAXED] to be paid in " + format_date(payments[0]['date']) + ", after signing the retainer, is non-refundable."
 
     if (len(payments) > 1):
         payments_string = ""
@@ -101,6 +101,9 @@ def format_payments(payments, include_taxes):
 
 ## format date to `{date + suffix} {full month name} {year}`
 def format_date(date_string):
+    if date_string == 'advance':
+        return date_string
+
     temp = datetime.datetime.strptime(date_string, '%d/%m/%Y')
     return str(format_day(temp.strftime("%d")) + " " + temp.strftime("%B") + " " + temp.strftime("%Y"))
 
