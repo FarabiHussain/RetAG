@@ -29,10 +29,23 @@ def validate(fill_info):
                 if (re.match('^[0-9]*$', current_pay['amount']) == False):
                     popup(icon="cancel", title="Error", message="Invalid amount in payment #" + str(index + 1), corner_radius=4)
                     return False
+                
+                if (current_pay['date'] == "advance"):
+                    if (index != 0):
+                        popup(icon="cancel", title="Error", message="'advance' date only allowed on the first payments", corner_radius=4)
+                        return False
 
-                if (index == 0 and current_pay['date'] != "advance") or (re.match(valid_date_regex, current_pay['date']) == None):
-                    popup(icon="cancel", title="Error", message="Invalid date in payment #" + str(index + 1), corner_radius=4)
+                if (re.match(valid_date_regex, current_pay['date']) == None):
+                    err_message = "Invalid date in payment #" + str(index + 1)
+
+                    if ((current_pay['date'] == "advance") and (index == 0)) == False:
+                        err_message = "'advance' date only allowed on the first payments" 
+                    else:
+                        continue
+
+                    popup(icon="cancel", title="Error", message=err_message, corner_radius=4)
                     return False
+
 
     return True
 
