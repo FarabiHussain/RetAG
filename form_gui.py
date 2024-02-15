@@ -1,6 +1,7 @@
 from tkinter import BooleanVar, IntVar, StringVar
 from path_manager import resource_path
 from CTkTable import *
+from CTkTableRowSelector import *
 from CTkMessagebox import CTkMessagebox as popup
 import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random
 ctk.set_appearance_mode("dark")
@@ -14,7 +15,7 @@ hs = root.winfo_screenheight() # height of the screen
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.6-beta.0"
+version = "v0.7-beta.4"
 table_ranges = { 'start': 0, 'end': 15}
 history_window = None
 history_entries = None
@@ -63,7 +64,7 @@ def handle_click_history():
     history_entries = form_logic.get_history()
 
     if (history_entries is None):
-        popup(title="Failed", message="No logs available", corner_radius=4)
+        popup(title="Failed", message="No history available", corner_radius=4)
 
     else:
         if (history_window is None or not history_window.winfo_exists()): 
@@ -80,8 +81,12 @@ def handle_click_history():
                     entry['application_fee'],
                 ])
 
+            form['import_btn'] = ctk.CTkButton(master=history_window, text="import", border_width=0, corner_radius=4, command=handle_click_import, width=100)
+            form['prev_btn'] = ctk.CTkButton(master=history_window, text="Prev", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="black", command=handle_click_prev, width=100, state='disabled')
             form['next_btn'] = ctk.CTkButton(master=history_window, text="Next", border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_next, width=100)
-            form['prev_btn'] = ctk.CTkButton(master=history_window, text="Prev", border_width=0, corner_radius=4, fg_color="#2A2A2A", command=handle_click_prev, width=100, state='disabled')
+
+            if len(history_entries) < 15:
+                form['next_btn'].configure(fg_color='#1F1E1E', state='disabled', text_color="black")
 
             history_table_frame = CTkTable(
                 master=history_window, 
@@ -90,12 +95,15 @@ def handle_click_history():
                 values=history_table_contents, 
                 corner_radius=4, 
                 header_color="#5e5e5e",
-                hover_color="#5e5e5e"
+                hover_color="#1f538d",
             )
 
+            form['row_selector'] = CTkTableRowSelector(history_table_frame, max_selection=1)
+
             history_table_frame.pack(padx=20, pady=20)
-            form['prev_btn'].place(x=200, y=490)
-            form['next_btn'].place(x=500, y=490)
+            form['import_btn'].place(x=445, y=490)
+            form['prev_btn'].place(x=550, y=490)
+            form['next_btn'].place(x=655, y=490)
 
             w = 800
             h = 540
@@ -114,6 +122,76 @@ def handle_click_history():
 
 
 ## 
+def handle_click_import():
+    global form, history_entries
+
+    selected_row = form['row_selector'].get()
+    matching_entry = None
+
+    if (len(selected_row) == 0):
+        popup(title="Failed", message="No row is selected", corner_radius=4)
+
+    else:
+        selected_row_data = {
+            'created_by': selected_row[0][0],
+            'created_date': selected_row[0][1],
+            'client_name': selected_row[0][2],
+            'application_type': selected_row[0][3],
+            'application_fee': selected_row[0][4]
+        }
+
+        for entry in history_entries:
+            if (
+                entry['created_by'] == selected_row_data['created_by'] and
+                entry['created_date'] == selected_row_data['created_date'] and
+                entry['client_name'] == selected_row_data['client_name'] and
+                entry['application_type'] == selected_row_data['application_type'] and
+                entry['application_fee'] == selected_row_data['application_fee']
+            ):
+                matching_entry = (entry)
+                import_match(matching_entry)
+                history_window.destroy()
+                break
+
+    if (matching_entry is None and len(selected_row) > 0):
+        popup(title="Failed", message="Error finding the row", corner_radius=4)
+
+
+
+##
+def import_match(matching_entry):
+    global form, status_string
+    status_string.set("data imported from history")
+
+    form['document_date'].delete(0, 'end')
+    form['client_name'].delete(0, 'end')
+    form['application_type'].delete(0, 'end')
+    form['application_fee'].delete(0, 'end')
+    form['email_address'].delete(0, 'end')
+    form['phone_number'].delete(0, 'end')
+    form['include_taxes'].set(True)
+
+    form['document_date'].insert(0, matching_entry['date_on_document'])
+    form['client_name'].insert(0, matching_entry['client_name'])
+    form['application_type'].insert(0, matching_entry['application_type'])
+    form['application_fee'].insert(0, matching_entry['application_fee'])
+    form['email_address'].insert(0, matching_entry['email'])
+    form['phone_number'].insert(0, matching_entry['phone'])
+
+    for i in range(12):
+        form['payment_list'][i]['date'].delete(0, 'end')
+        form['payment_list'][i]['amount'].delete(0, 'end')
+
+        form['payment_list'][i]['date'].insert(0, matching_entry['date_' + str(i + 1)])
+        form['payment_list'][i]['amount'].insert(0, matching_entry['amount_' + str(i + 1)])
+
+    if (matching_entry['add_taxes'] == 'True'):
+        form['include_taxes'].set(True)
+    else:
+        form['include_taxes'].set(False)
+
+
+## 
 def handle_click_next():
     switch_page('next')
 
@@ -128,6 +206,7 @@ def switch_page(direction):
     global table_ranges, history_table_frame
 
     if (direction == 'next'):
+        # navigate if a page is available
         if table_ranges['end'] < len(history_entries):
             table_ranges['start'] += 15
             table_ranges['end'] += 15
@@ -138,6 +217,7 @@ def switch_page(direction):
             form['prev_btn'].configure(state='normal', fg_color="#b02525")
 
     elif (direction == 'prev'):
+        # navigate if a page is available
         if table_ranges['start'] > 0:
             table_ranges['start'] -= 15 
             table_ranges['end'] -= 15
@@ -236,7 +316,7 @@ def handle_click_test_data():
     form['application_type'].insert(0, random.choice(['EOI','MPNP','PR','PGWP','Citizenship']))
     form['application_fee'].insert(0, application_fee)
     form['email_address'].insert(0, client_name.replace(" ", "").lower() + '@email.com')
-    form['phone_number'].insert(0, random.choice(['431','204']) + str(random.randint(100000, 999999)))
+    form['phone_number'].insert(0, random.choice(['431','204']) + str(random.randint(1000000, 9999999)))
 
     installments = random.randint(1,12)
     per_installment = float(application_fee/installments)
@@ -430,8 +510,8 @@ def init_form():
     form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_1000dollars, width=60, height=25)
     form['advance_btn'] = ctk.CTkButton(master=root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
 
-    form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
-    form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
+    form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Printer", border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_print, width=120)
+    form['test_data_btn'] = ctk.CTkButton(master=root, text="Enter Test Data", border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
     form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
     form['history_btn'] = ctk.CTkButton(master=root, text="History", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=120)

@@ -88,7 +88,7 @@ def write_to_history(form, include_taxes, toPdf):
         if (i < len(form['payment_list'])): 
             current_payment = form['payment_list'][i]
             history_entry.append(str(float(current_payment['amount'])))
-            history_entry.append(str(format_date(current_payment['date'])))
+            history_entry.append(str(current_payment['date']))
         else:
             history_entry.append("")
             history_entry.append("")

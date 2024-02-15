@@ -4,3 +4,4 @@
 *.spec
 /output/*.docx
 /output/*.pdf
+/logs/*.csv
