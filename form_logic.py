@@ -1,4 +1,4 @@
-import editor, re, os
+import editor, re, os, csv
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -50,9 +50,9 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, include_taxes, toPrinter, toPdf):
+def generate(fill_info, include_taxes, open_output, toPrinter, toPdf):
     if (validate(fill_info) == True):
-        return editor.process(fill_info, include_taxes, toPrinter, toPdf)
+        return editor.process(fill_info, include_taxes, open_output, toPrinter, toPdf)
 
     return False
 
@@ -60,6 +60,7 @@ def generate(fill_info, include_taxes, toPrinter, toPdf):
 #
 def get_history():
     logs_dir = os.getcwd() + "\\logs\\"
+
     if not os.path.exists(logs_dir):
         print("path does not exist")
         return None
@@ -67,10 +68,8 @@ def get_history():
         print("file does not exist")
         return None
     else:
-        f = open(logs_dir + "\\history.csv", "r")
-        history_entries = f.readlines()
-        print(history_entries)
-        return(history_entries)
+        with open(logs_dir + "\\history.csv", mode='r') as infile:
+            return list(csv.DictReader(infile))
 
 
 ## reset form fields

@@ -6,7 +6,7 @@ import datetime, os, sys, win32api, win32print, csv
 
 
 ## generate the docx with the input info
-def process(form, include_taxes, toPrinter, toPdf):
+def process(form, include_taxes, open_output, toPrinter, toPdf):
     try:
         init_data = init(form, include_taxes)
         doc = Document(init_data['input_file'])
@@ -36,7 +36,8 @@ def process(form, include_taxes, toPrinter, toPdf):
             win32api.ShellExecute(0, "print", init_data['output_file'], None,  ".",  0)
 
         # open the word file
-        os.startfile(output_dir + init_data['output_file'])
+        if open_output:
+            os.startfile(output_dir + init_data['output_file'])
 
         write_to_history(form, include_taxes, toPdf)
 
@@ -80,7 +81,7 @@ def write_to_history(form, include_taxes, toPdf):
     history_entry.append(str(form['application_type']))
     history_entry.append(str(form['application_fee']))
     history_entry.append(str(form['email_address']))
-    history_entry.append("`" + str(form['phone_number']) + "`")
+    history_entry.append(str(form['phone_number']))
     history_entry.append(str(include_taxes))
 
     for i in range(12):

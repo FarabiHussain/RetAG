@@ -1,7 +1,8 @@
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
+from CTkTable import *
 from CTkMessagebox import CTkMessagebox as popup
-import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print
+import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -10,7 +11,7 @@ root = ctk.CTk()
 root.resizable(False, False)
 ws = root.winfo_screenwidth() # width of the screen
 hs = root.winfo_screenheight() # height of the screen
-historyWindow = None
+history_window = None
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
@@ -53,39 +54,53 @@ def handle_click_output_folder():
 
 ##
 def handle_click_history():
-    global historyWindow, status_string
+    global history_window, status_string
     status_string.set('opened history')
 
-    history_list = form_logic.get_history()
+    history_entries = form_logic.get_history()
 
-    if (history_list is None):
+    if (history_entries is None):
         popup(title="Failed", message="No logs available", corner_radius=4)
 
-    elif (historyWindow is None or not historyWindow.winfo_exists()): 
-            historyWindow = ctk.CTkToplevel()
+    else:
+        if (history_window is None or not history_window.winfo_exists()): 
+            history_window = ctk.CTkToplevel()
 
-            w = h = 400
+            history_table = [['created by','created date','client name','application type','application fee']]
+            for entry in history_entries[0:15]:
+                history_table.append([
+                    entry['created_by'],
+                    entry['created_date'],
+                    entry['client_name'],
+                    entry['application_type'],
+                    entry['application_fee'],
+                ])
+
+            table = CTkTable(
+                master=history_window, 
+                row=len(history_table), 
+                column=len(history_table[0]), 
+                values=history_table, 
+                corner_radius=4, 
+                header_color="#5e5e5e"
+            )
+
+            table.pack(padx=20, pady=20)
+
+            w = 800
+            h = 540
             x = (ws/2) - (w/2)
             y = (hs/2) - (h/2)
 
-            historyWindow.geometry('%dx%d+%d+%d' % (w, h, x, y))
-            historyWindow.focus()
-            historyWindow.after(201, lambda: historyWindow.iconbitmap("assets\\logo.ico"))
-            historyWindow.title("History")
-            historyWindow.resizable(False, False)
-            historyWindow.after(100, lambda: historyWindow.focus())
+            history_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
+            history_window.focus()
+            history_window.after(201, lambda: history_window.iconbitmap("assets\\logo.ico"))
+            history_window.title("History")
+            history_window.resizable(False, False)
+            history_window.after(100, lambda: history_window.focus())
 
-    else:
-        historyWindow.focus()
-        label_list = []
-
-        for entry in history_list:
-            temp_label = ctk.CTkLabel(historyWindow, text=entry.split(",")[0])
-            temp_label.pack(padx=20, pady=20)
-
-            label_list.append(temp_label)
-        # print(history_list)
-
+        else:
+            history_window.focus()
 
 
 ##
@@ -111,7 +126,7 @@ def handle_generate(toPrinter, toPdf):
         "payment_list": temp_list,
     }
 
-    response = form_logic.generate(fill_info, form['include_taxes'].get(), toPrinter, toPdf)
+    response = form_logic.generate(fill_info, form['include_taxes'].get(), form['open_output_switch'].get(), toPrinter, toPdf)
 
     if toPrinter == False:
         if response == False:
@@ -150,25 +165,35 @@ def handle_click_test_data():
     global form, status_string
     status_string.set("dummy data placed")
 
+    client_name = names.get_full_name()
+    application_fee = (random.randint(1,4) * 1000)
+
     form['document_date'].delete(0, 'end')
     form['client_name'].delete(0, 'end')
     form['application_type'].delete(0, 'end')
     form['application_fee'].delete(0, 'end')
     form['email_address'].delete(0, 'end')
     form['phone_number'].delete(0, 'end')
-    form['document_date'].insert(0, '15/2/2024')
-    form['client_name'].insert(0, 'John Doe')
-    form['application_type'].insert(0, 'Application')
-    form['application_fee'].insert(0, '100')
-    form['email_address'].insert(0, 'email@dummy.com')
-    form['phone_number'].insert(0, '0123456789')
+    form['document_date'].insert(0, '1/3/2024')
+    form['client_name'].insert(0, client_name)
+    form['application_type'].insert(0, random.choice(['EOI','MPNP','PR','PGWP','Citizenship']))
+    form['application_fee'].insert(0, application_fee)
+    form['email_address'].insert(0, client_name.replace(" ", "").lower() + '@email.com')
+    form['phone_number'].insert(0, random.choice(['431','204']) + str(random.randint(100000, 999999)))
 
-    form['payment_list'][0]['date'].delete(0, 'end')
-    form['payment_list'][1]['amount'].delete(0, 'end')
-    form['payment_list'][1]['date'].delete(0, 'end')
-    form['payment_list'][0]['date'].insert(0, '15/2/2024')
-    form['payment_list'][1]['amount'].insert(0, '100')
-    form['payment_list'][1]['date'].insert(0, '15/3/2024')
+    installments = random.randint(1,12)
+    per_installment = float(application_fee/installments)
+
+    for i in range(12):
+        form['payment_list'][i]['date'].delete(0, 'end')
+        form['payment_list'][i]['amount'].delete(0, 'end')
+    
+    for i in range(installments):
+        m = str((3 + i) % 12 + 1)
+        y = str(int((4 + i) / 12) + 2024)
+
+        form['payment_list'][i]['date'].insert(0, ('1/' + m + "/" + y))
+        form['payment_list'][i]['amount'].insert(0, "{:.2f}".format((per_installment)))
 
 
 ##
@@ -185,10 +210,12 @@ def handle_click_1000dollars():
     form['application_fee'].insert(0, 1000)
 
 
+##
 def handle_click_advance():
     global form
     form['payment_list'][0]['date'].delete(0, 'end')
     form['payment_list'][0]['date'].insert(0, 'advance')
+
 
 ##
 def autofill_first_amount(var, index, mode):
@@ -258,7 +285,9 @@ def render_form():
     form['advance_btn'].place(x=568, y=67)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
-    y_offset += 130
+    y_offset += 40
+    form['open_output_switch'].place(x=660, y=y_offset)
+    y_offset += 90
     form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['test_data_btn'].place(x=660, y=y_offset)
@@ -302,6 +331,7 @@ def init_form():
     form['autofill_date'] = StringVar()
     form['autofill_date'].trace_add('write', autofill_first_date)
     form['include_taxes'] = BooleanVar(value=True)
+    form['open_output'] = BooleanVar(value=True)
 
     ## left frame
     form['frame_info'] = ctk.CTkFrame(master=root, width=300, height=440)
@@ -346,6 +376,7 @@ def init_form():
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open File", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
     form['history_btn'] = ctk.CTkButton(master=root, text="History", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=120)
     form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
     form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
