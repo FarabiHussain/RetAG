@@ -1,4 +1,4 @@
-from tkinter import BooleanVar, StringVar
+from tkinter import BooleanVar, IntVar, StringVar
 from path_manager import resource_path
 from CTkTable import *
 from CTkMessagebox import CTkMessagebox as popup
@@ -11,11 +11,14 @@ root = ctk.CTk()
 root.resizable(False, False)
 ws = root.winfo_screenwidth() # width of the screen
 hs = root.winfo_screenheight() # height of the screen
-history_window = None
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
 version = "v0.6-beta.0"
+table_ranges = { 'start': 0, 'end': 15}
+history_window = None
+history_entries = None
+history_table_frame = None
 
 
 ##
@@ -54,7 +57,7 @@ def handle_click_output_folder():
 
 ##
 def handle_click_history():
-    global history_window, status_string
+    global history_window, history_entries, status_string, history_table_frame, form
     status_string.set('opened history')
 
     history_entries = form_logic.get_history()
@@ -66,9 +69,10 @@ def handle_click_history():
         if (history_window is None or not history_window.winfo_exists()): 
             history_window = ctk.CTkToplevel()
 
-            history_table = [['created by','created date','client name','application type','application fee']]
-            for entry in history_entries[0:15]:
-                history_table.append([
+            history_table_contents = [['created by','created date','client name','application type','application fee']]
+
+            for entry in history_entries[table_ranges['start'] : table_ranges['end']]:
+                history_table_contents.append([
                     entry['created_by'],
                     entry['created_date'],
                     entry['client_name'],
@@ -76,21 +80,27 @@ def handle_click_history():
                     entry['application_fee'],
                 ])
 
-            table = CTkTable(
+            form['next_btn'] = ctk.CTkButton(master=history_window, text="Next", border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_next, width=100)
+            form['prev_btn'] = ctk.CTkButton(master=history_window, text="Prev", border_width=0, corner_radius=4, fg_color="#2A2A2A", command=handle_click_prev, width=100, state='disabled')
+
+            history_table_frame = CTkTable(
                 master=history_window, 
-                row=len(history_table), 
-                column=len(history_table[0]), 
-                values=history_table, 
+                row=len(history_table_contents), 
+                column=len(history_table_contents[0]), 
+                values=history_table_contents, 
                 corner_radius=4, 
-                header_color="#5e5e5e"
+                header_color="#5e5e5e",
+                hover_color="#5e5e5e"
             )
 
-            table.pack(padx=20, pady=20)
+            history_table_frame.pack(padx=20, pady=20)
+            form['prev_btn'].place(x=200, y=490)
+            form['next_btn'].place(x=500, y=490)
 
             w = 800
             h = 540
-            x = (ws/2) - (w/2)
-            y = (hs/2) - (h/2)
+            x = (ws/2) - (w/2) + 50
+            y = (hs/2) - (h/2) + 50
 
             history_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
             history_window.focus()
@@ -101,6 +111,53 @@ def handle_click_history():
 
         else:
             history_window.focus()
+
+
+## 
+def handle_click_next():
+    switch_page('next')
+
+
+##
+def handle_click_prev():
+    switch_page('prev')
+
+
+##
+def switch_page(direction):
+    global table_ranges, history_table_frame
+
+    if (direction == 'next'):
+        if table_ranges['end'] < len(history_entries):
+            table_ranges['start'] += 15
+            table_ranges['end'] += 15
+
+        # disable button when last page is reached
+        if table_ranges['end'] + 15 > len(history_entries):
+            form['next_btn'].configure(state='disabled', fg_color='#2A2A2A')
+            form['prev_btn'].configure(state='normal', fg_color="#b02525")
+
+    elif (direction == 'prev'):
+        if table_ranges['start'] > 0:
+            table_ranges['start'] -= 15 
+            table_ranges['end'] -= 15
+
+        # disable button when first page is reached
+        if table_ranges['start'] - 15 < 0:
+            form['prev_btn'].configure(state='disabled', fg_color='#2A2A2A')
+            form['next_btn'].configure(state='normal', fg_color="#b02525")
+
+    history_table_contents = [['created by','created date','client name','application type','application fee']]
+    for entry in history_entries[table_ranges['start'] : table_ranges['end']]:
+        history_table_contents.append([
+            entry['created_by'],
+            entry['created_date'],
+            entry['client_name'],
+            entry['application_type'],
+            entry['application_fee'],
+        ])
+
+    history_table_frame.update_values(history_table_contents)
 
 
 ##
@@ -376,7 +433,7 @@ def init_form():
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
-    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open File", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
+    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
     form['history_btn'] = ctk.CTkButton(master=root, text="History", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=120)
     form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
     form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
