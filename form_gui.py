@@ -7,10 +7,13 @@ ctk.set_default_color_theme("dark-blue")
 form = {}
 root = ctk.CTk()
 root.resizable(False, False)
+ws = root.winfo_screenwidth() # width of the screen
+hs = root.winfo_screenheight() # height of the screen
+historyWindow = None
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.5-beta.1"
+version = "v0.6-beta.0"
 
 
 ##
@@ -48,6 +51,33 @@ def handle_click_output_folder():
 
 
 ##
+def handle_click_history():
+    global historyWindow, status_string
+    status_string.set('opened history')
+
+    if (historyWindow is None or not historyWindow.winfo_exists()): 
+        historyWindow = ctk.CTkToplevel()
+
+        w = h = 400
+        x = (ws/2) - (w/2)
+        y = (hs/2) - (h/2)
+
+        historyWindow.geometry('%dx%d+%d+%d' % (w, h, x, y))
+        historyWindow.focus()
+        historyWindow.after(201, lambda: historyWindow.iconbitmap("assets\\logo.ico"))
+        historyWindow.title("History")
+        historyWindow.resizable(False, False)
+        historyLabel = ctk.CTkLabel(historyWindow, text="ToplevelWindow")
+        historyLabel.pack(padx=20, pady=20)
+        historyWindow.after(100, lambda: historyWindow.focus())
+
+    else:
+        historyWindow.focus()
+
+
+
+
+##
 def handle_generate(toPrinter, toPdf):
 
     temp_list = []
@@ -61,7 +91,8 @@ def handle_generate(toPrinter, toPdf):
             })
 
     fill_info = {
-        "client": form['client_name'].get(),
+        "document_date": form['document_date'].get(),
+        "client_name": form['client_name'].get(),
         "application_type": form['application_type'].get(),
         "application_fee": form['application_fee'].get(),
         "email_address": form['email_address'].get(),
@@ -216,10 +247,12 @@ def render_form():
     form['advance_btn'].place(x=568, y=67)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
-    y_offset += 170
+    y_offset += 130
     form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['test_data_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['history_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['output_btn'].place(x=660, y=y_offset)
     y_offset += 40
@@ -243,7 +276,13 @@ def init_form():
 
     printer_list = [printer[2] for printer in win32print.EnumPrinters(2) if 'PDF' not in printer[2]]
 
-    root.geometry("800x540")
+    # calculate x and y coordinates for the Tk root window
+    w = 800
+    h = 540
+    x = (ws/2) - (w/2)
+    y = (hs/2) - (h/2)
+
+    root.geometry('%dx%d+%d+%d' % (w, h, x, y))
     root.iconbitmap(resource_path("assets\\logo.ico"))
     root.title("AMCAIM RetAG " + version)
 
@@ -296,6 +335,7 @@ def init_form():
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Print", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Test Data", border_width=0, corner_radius=4, fg_color='#1F1E1E', text_color="#2A2A2A", command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['history_btn'] = ctk.CTkButton(master=root, text="History", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=120)
     form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
     form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
     form['printer_dropdown'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected, width=120)

@@ -1,0 +1,3 @@
+created_by,created_date,date_on_document,client_name,application_type,application_fee,email,phone,add_taxes,amount_1,date_1,amount_2,date_2,amount_3,date_3,amount_4,date_4,amount_5,date_5,amount_6,date_6,amount_7,date_7,amount_8,date_8,amount_9,date_9,amount_10,date_10,amount_11,date_11,amount_12,date_12,file_format
+FARABI-AMCAIM,2024-Feb-14 05:33 PM,15/2/2024,John Doe,Application,100,email@dummy.com,`0123456789`,False,100.0,15th February 2024,100.0,15th March 2024,,,,,,,,,,,,,,,,,,,,,DOCX
+FARABI-AMCAIM,2024-Feb-14 05:34 PM,15/2/2024,John Doe,Application,100,email@dummy.com,`0123456789`,True,100.0,15th February 2024,100.0,15th March 2024,,,,,,,,,,,,,,,,,,,,,DOCX
