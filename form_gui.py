@@ -1,5 +1,6 @@
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
+from CTkMessagebox import CTkMessagebox as popup
 import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -55,25 +56,35 @@ def handle_click_history():
     global historyWindow, status_string
     status_string.set('opened history')
 
-    if (historyWindow is None or not historyWindow.winfo_exists()): 
-        historyWindow = ctk.CTkToplevel()
+    history_list = form_logic.get_history()
 
-        w = h = 400
-        x = (ws/2) - (w/2)
-        y = (hs/2) - (h/2)
+    if (history_list is None):
+        popup(title="Failed", message="No logs available", corner_radius=4)
 
-        historyWindow.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        historyWindow.focus()
-        historyWindow.after(201, lambda: historyWindow.iconbitmap("assets\\logo.ico"))
-        historyWindow.title("History")
-        historyWindow.resizable(False, False)
-        historyLabel = ctk.CTkLabel(historyWindow, text="ToplevelWindow")
-        historyLabel.pack(padx=20, pady=20)
-        historyWindow.after(100, lambda: historyWindow.focus())
+    elif (historyWindow is None or not historyWindow.winfo_exists()): 
+            historyWindow = ctk.CTkToplevel()
+
+            w = h = 400
+            x = (ws/2) - (w/2)
+            y = (hs/2) - (h/2)
+
+            historyWindow.geometry('%dx%d+%d+%d' % (w, h, x, y))
+            historyWindow.focus()
+            historyWindow.after(201, lambda: historyWindow.iconbitmap("assets\\logo.ico"))
+            historyWindow.title("History")
+            historyWindow.resizable(False, False)
+            historyWindow.after(100, lambda: historyWindow.focus())
 
     else:
         historyWindow.focus()
+        label_list = []
 
+        for entry in history_list:
+            temp_label = ctk.CTkLabel(historyWindow, text=entry.split(",")[0])
+            temp_label.pack(padx=20, pady=20)
+
+            label_list.append(temp_label)
+        # print(history_list)
 
 
 
