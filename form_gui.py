@@ -3,6 +3,7 @@ from path_manager import resource_path
 from CTkTable import *
 from CTkTableRowSelector import *
 from CTkMessagebox import CTkMessagebox as popup
+from dateutil import relativedelta as rd
 import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
@@ -15,8 +16,10 @@ hs = root.winfo_screenheight() # height of the screen
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.7-beta.4"
+version = "v0.7.5"
 table_ranges = { 'start': 0, 'end': 15}
+current_payment_index = 1
+current_plus_month_posy = 101
 history_window = None
 history_entries = None
 history_table_frame = None
@@ -157,7 +160,6 @@ def handle_click_import():
         popup(title="Failed", message="Error finding the row", corner_radius=4)
 
 
-
 ##
 def import_match(matching_entry):
     global form, status_string
@@ -274,9 +276,16 @@ def handle_generate(toPrinter, toPdf):
 
 ##
 def handle_click_reset():
-    global form, status_string
+    global form, status_string, current_payment_index, current_plus_month_posy, table_ranges
     status_string.set("form cleared")
     form = form_logic.reset(form)
+    form['include_taxes'].set(True)
+    form['open_output'].set(True)
+    current_payment_index = 1
+    current_plus_month_posy = 101
+    table_ranges = { 'start': 0, 'end': 15}
+
+    replace_plus_month_button(place_button=False)
 
 
 ##
@@ -286,6 +295,10 @@ def handle_click_today():
     form['document_date'].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
     (form['payment_list'][0]['date']).delete(0, "end")
     (form['payment_list'][0]['date']).insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
+
+    if current_payment_index == 1:
+        form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
+        form['plus_month_btn'].place(x=568, y=101)
 
 
 ##
@@ -352,6 +365,56 @@ def handle_click_advance():
     global form
     form['payment_list'][0]['date'].delete(0, 'end')
     form['payment_list'][0]['date'].insert(0, 'advance')
+
+    if current_payment_index == 1:
+        replace_plus_month_button()
+
+
+##
+def replace_plus_month_button(place_button = True):
+    global form, current_plus_month_posy
+
+    form['plus_month_btn'].destroy()
+    form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
+    
+    if place_button:
+        form['plus_month_btn'].place(x=568, y=current_plus_month_posy)
+
+
+##
+def handle_click_plus_month():
+    global form, current_payment_index, current_plus_month_posy
+    pixels_to_next_row = 34
+
+    if (current_payment_index < 12 and len(form['payment_list'][current_payment_index - 1]['date'].get()) != 0): 
+
+        prev_payment_date = form['payment_list'][current_payment_index - 1]['date'].get()
+        
+        if (prev_payment_date == "advance"):
+            prev_payment_date = dt.datetime.now().strftime('%d/%m/%Y')
+
+        dt_object = dt.datetime.strptime(prev_payment_date, '%d/%m/%Y')
+        dt_object = dt_object + rd.relativedelta(months=1)
+
+        form['payment_list'][current_payment_index]['date'].delete(0, 'end')
+        form['payment_list'][current_payment_index]['date'].insert(0, dt_object.strftime('%d/%m/%Y'))
+
+        current_payment_index += 1
+
+        if current_payment_index < 12:
+            current_plus_month_posy += pixels_to_next_row
+            form['plus_month_btn'].place(x=568, y=current_plus_month_posy)
+        else:
+            form['plus_month_btn'].destroy()
+
+    elif len(form['payment_list'][0]['date'].get()) == 0:
+        popup(title="Failed", message="Unable to add month as previous payment date is empty", corner_radius=4)
+
+    elif len(form['payment_list'][current_payment_index - 1]['date'].get()) < 8:
+        current_payment_index -= 1
+        current_plus_month_posy -= pixels_to_next_row
+        replace_plus_month_button()
+        handle_click_plus_month()
 
 
 ##
@@ -420,6 +483,7 @@ def render_form():
     form['500_btn'].place(x=180, y=260)
     form['1000_btn'].place(x=250, y=260)
     form['advance_btn'].place(x=568, y=67)
+    # form['plus_month_btn'].place(x=568, y=101)
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40
@@ -509,6 +573,7 @@ def init_form():
     form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_500dollars, width=60, height=25)
     form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_1000dollars, width=60, height=25)
     form['advance_btn'] = ctk.CTkButton(master=root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
+    form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
 
     form['test_print_btn'] = ctk.CTkButton(master=root, text="Test Printer", border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_print, width=120)
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Enter Test Data", border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120)
