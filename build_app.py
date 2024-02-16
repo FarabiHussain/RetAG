@@ -10,6 +10,15 @@ cursor = 2
 
 # --------------------------------------------------------
 
+##
+def install_dependencies():
+    os.system('cls')
+    for library in ['pyinstaller', 'python-dateutil', 'python-docx', 'docx2pdf', 'customtkinter', 'CTkTable', 'CTkMessagebox']:
+        print("installing dependency: " + library)
+        check_call(['pip', 'install', library], stdout=DEVNULL, stderr=STDOUT)
+    print("done")
+
+
 ## clean up existing files
 def cleanup(isInitial = False):
     if os.path.exists(cwd + "\\build"):
@@ -27,6 +36,7 @@ def cleanup(isInitial = False):
     if isInitial:
         for f in glob.glob("v*.zip"):
             os.remove(f)
+
 
 ## read the most recent version created
 def read_version():
@@ -49,16 +59,23 @@ def read_version():
     except Exception as e:
         print(e)
 
+
 ##
 def unformat(formatted):
     return formatted.replace("]","").replace("[","").replace(" ","")
 
 # --------------------------------------------------------
 
+
+# read versions.log to find the last build number
 read_version()
 latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2])
+
 # increment the patch number for the current build
 ver[2] = "[" + str(int(unformat(ver[2])) + 1) + "]"
+
+# install dependencies needed to build the file
+install_dependencies()
 
 while not done:
     os.system('cls')
