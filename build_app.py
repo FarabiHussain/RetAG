@@ -2,8 +2,11 @@ import shutil, os, glob, msvcrt
 from datetime import datetime as dt
 from subprocess import DEVNULL, STDOUT, check_call
 
-cwd = os.getcwd() # current working dir
-ver = ['[0]',' 0 ',' 0 ']
+cwd = os.getcwd()
+ver = ['0', '0', '0']
+done = False
+kb = None
+cursor = 2
 
 # --------------------------------------------------------
 
@@ -36,29 +39,40 @@ def read_version():
             latest = latest.split(".")
 
             ver = [
-                "[" + str(latest[0]) + "]",
-                " " + str(latest[1]) + " ",
-                " " + str(latest[2]) + " ",
+                str(latest[0]),
+                str(latest[1]),
+                str(latest[2]),
             ]
+
+            ver[cursor] = "[" + ver[cursor] + "]"
 
     except Exception as e:
         print(e)
 
+##
+def unformat(formatted):
+    return formatted.replace("]","").replace("[","").replace(" ","")
+
 # --------------------------------------------------------
 
-done = False
-cursor = 0
-kb = None
-
 read_version()
+latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2])
+# increment the patch number for the current build
+ver[2] = "[" + str(int(unformat(ver[2])) + 1) + "]"
 
 while not done:
     os.system('cls')
-    print("Use 'a' and 'd' keys to navigate, 'w' and 's' to change version, 'e' to confirm.\napp version: v" + ver[0] + "." + ver[1] + "." + ver[2])
+
+    print(
+        "Use 'a' and 'd' keys to navigate, 'w' and 's' to change version, 'e' to confirm.\n" +
+        "Latest build found: v" + latest_build + "\n"
+    )
+
+    print("New build version: v" + ver[0] + "." + ver[1] + "." + ver[2])
     kb = msvcrt.getch()
 
     for i in range(len(ver)):
-        ver[i] = ver[i].replace("]"," ").replace("["," ")
+        ver[i] = unformat(ver[i])
 
     try: kb = kb.decode(encoding='utf-8')
     except: pass
@@ -68,12 +82,12 @@ while not done:
     elif kb == "d":
         cursor = (cursor + 1) % 3
     elif kb == "w":
-        ver[cursor] = " " + str(int(ver[cursor]) + 1) + " "
+        ver[cursor] = str(int(ver[cursor]) + 1)
     elif kb == "s" and int(ver[cursor]) > 0:
-        ver[cursor] = " " + str(int(ver[cursor]) - 1) + " "
+        ver[cursor] = str(int(ver[cursor]) - 1)
     elif kb == "e":
         for i in range(len(ver)):
-            ver[i] = str(int(ver[i].replace("]","").replace("[","")))
+            ver[i] = unformat(ver[i])
         done = True
 
     if done == False:
