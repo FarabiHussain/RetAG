@@ -33,7 +33,7 @@ def process(form, include_taxes, open_output, toPrinter, toPdf):
 
         if toPrinter:
             win32print.SetDefaultPrinter(toPrinter)
-            win32api.ShellExecute(0, "print", init_data['output_file'], None,  ".",  0)
+            win32api.ShellExecute(0, "print", output_dir + init_data['output_file'], None,  ".",  0)
 
         # open the word file
         if open_output:
