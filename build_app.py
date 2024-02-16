@@ -15,6 +15,9 @@ def cleanup(isInitial = False):
     if os.path.exists(cwd + "\\dist"):
         shutil.rmtree(cwd + "\\dist")
 
+    if not os.path.exists(cwd + "\\releases"):
+        os.makedirs(cwd + "\\releases")
+
     for f in glob.glob("*.spec"):
         os.remove(f)
 
@@ -90,11 +93,22 @@ except: print("could not copy assets folder")
 
 ## zip the contents of the dist folder
 try: shutil.make_archive("v" + (".").join(ver), 'zip', cwd + "\\dist")
-except: print("could not zip dist folder")
+except Exception as e: print("could not zip dist folder: ", e)
 
+## move the created zip file into the releases folder
+try:
+    for file in glob.glob(cwd + '\\v*.zip'):
+        shutil.move(file, cwd + "\\releases")
+except Exception as e: print("could not move zip file: ", e)
+
+## final cleanup of temporary files
 print("cleaning up...")
 cleanup(isInitial = False)
 print("done")
 
+## write the newest build to the log
 with open('versions.log', 'a') as log_file:
     log_file.write("\n[" + dt.now().strftime("%d/%m/%Y, %H:%M:%I" + "]\t") + "v" + (".").join(ver))
+
+output_dir = (cwd + "\\releases")
+os.startfile(output_dir)
