@@ -16,7 +16,7 @@ hs = root.winfo_screenheight() # height of the screen
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.7.5"
+version = "v0.8.0"
 table_ranges = { 'start': 0, 'end': 15}
 current_payment_index = 1
 current_plus_month_posy = 101
