@@ -1,13 +1,10 @@
-import shutil, os, glob, msvcrt
-from datetime import datetime as dt
-from subprocess import DEVNULL, STDOUT, check_call
+import os, msvcrt
 from build_app_utils import *
 
 cwd = os.getcwd()
 ver = ['0', '0', '0']
 kb = None
 cur = 2
-
 
 ver = get_version(ver)
 latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2])
@@ -22,13 +19,14 @@ while True:
     os.system('cls')
 
     print(
-        ("Use 'a' and 'd' keys to navigate, 'w' and 's' to change version, 'e' to confirm. 'q' to quit.\n") +
+        ("Use 'a' and 'd' keys to navigate, 'w' and 's' to change version, 'e' to confirm, 'q' to quit.\n") +
         ("Latest build found: v" + latest_build + "\n") +
         ("New build version: v" + ver[0] + "." + ver[1] + "." + ver[2])
     )
 
     kb = msvcrt.getch()
 
+    # remove formatting from each element
     for i in range(len(ver)):
         ver[i] = unformat(ver[i])
 
@@ -51,6 +49,7 @@ while True:
     elif kb == "q":
         break
 
+    # add square brackets to the currently selected element
     ver[cur] = "[" + ver[cur].replace(" ", "") + "]"
 
 
