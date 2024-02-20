@@ -6,9 +6,9 @@ import datetime, os, sys, win32api, win32print, csv
 
 
 ## generate the docx with the input info
-def process(form, include_taxes, open_output, toPrinter, toPdf):
+def process(form, include_taxes, open_output, toPrinter, toPdf, isCodeOfConduct):
     try:
-        init_data = init(form, include_taxes)
+        init_data = init(form, include_taxes, isCodeOfConduct)
         doc = Document(init_data['input_file'])
 
         for paragraph in doc.paragraphs:
@@ -31,7 +31,7 @@ def process(form, include_taxes, open_output, toPrinter, toPdf):
             os.remove(output_dir + init_data['output_file'])
             init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
 
-        if toPrinter:
+        if toPrinter or isCodeOfConduct:
             win32print.SetDefaultPrinter(toPrinter)
             win32api.ShellExecute(0, "print", output_dir + init_data['output_file'], None,  ".",  0)
 
@@ -45,7 +45,7 @@ def process(form, include_taxes, open_output, toPrinter, toPdf):
         return init_data['output_file']
 
     except Exception as e:
-        print(e)
+        print('Exception: ' + str(e))
         popup(title="Failed", message=e, corner_radius=4)
         return False
 
@@ -102,26 +102,33 @@ def write_to_history(form, include_taxes, toPdf):
 
 
 ## initializes the fill info, output and input files
-def init(form, include_taxes):
+def init(form, include_taxes, isCodeOfConduct):
     date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
-    payment_plan = format_payments(form['payment_list'], include_taxes)
 
+    # data needed in both retainers and conducts
     input_data = {
-        '[PAY_PLAN]': payment_plan,
-        '[DAY]': format_day(date_on_document.strftime("%d")),
-        '[MONTH]': date_on_document.strftime("%B"),
+        '[DAY]': date_on_document.strftime("%d"),
+        '[MONTH]': date_on_document.strftime("%m"),
         '[YEAR]': date_on_document.strftime("%Y"),
         '[CLIENT]': form["client_name"],
         '[APP_TYPE]': form["application_type"],
-        '[APP_FEE]': format_cents(form["application_fee"]),
-        '[TAXED]': add_taxes(form["application_fee"]),
-        '[EMAIL]': form["email_address"],
-        '[PHONE]': format_phone(form["phone_number"])
     }
 
-    input_file = resource_path("assets\\template.docx")
-    output_file = "Retainer Agreement - " + (form["client_name"])
-    output_file += ".docx"
+    input_file = resource_path("assets\\conduct.docx")
+    output_file = "Code of Conduct - " + (form["client_name"]) + ".docx"
+
+    # include the following if the document is a retainer agreement
+    if not isCodeOfConduct:
+        input_data['[DAY]'] = format_day(date_on_document.strftime("%d"))
+        input_data['[MONTH]'] = date_on_document.strftime("%B")
+        input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], include_taxes)
+        input_data['[APP_FEE]'] = format_cents(form["application_fee"])
+        input_data['[TAXED]'] = add_taxes(form["application_fee"])
+        input_data['[EMAIL]'] = form["email_address"]
+        input_data['[PHONE]'] = format_phone(form["phone_number"])
+
+        input_file = resource_path("assets\\retainer.docx")
+        output_file = "Retainer Agreement - " + (form["client_name"]) + ".docx"
 
     return {
         'input_data': input_data, 

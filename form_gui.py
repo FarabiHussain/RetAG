@@ -1,10 +1,11 @@
-from tkinter import BooleanVar, IntVar, StringVar
+from tkinter import BooleanVar, StringVar
+from docx import Document
 from path_manager import resource_path
 from CTkTable import *
 from CTkTableRowSelector import *
 from CTkMessagebox import CTkMessagebox as popup
 from dateutil import relativedelta as rd
-import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random
+import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random, time
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -16,7 +17,7 @@ hs = root.winfo_screenheight() # height of the screen
 status_string = StringVar(value="Ready")
 printer_selected = StringVar(value=win32print.GetDefaultPrinter())
 printer_list = []
-version = "v0.8.0"
+version = "v0.9.0"
 table_ranges = { 'start': 0, 'end': 15}
 current_payment_index = 1
 current_plus_month_posy = 101
@@ -32,7 +33,8 @@ def handle_click_docx():
 
     toPrinter = False
     toPdf = False
-    handle_generate(toPrinter, toPdf)
+    isCodeOfConduct = False
+    handle_generate(toPrinter, toPdf, isCodeOfConduct)
 
 
 ##
@@ -42,15 +44,30 @@ def handle_click_pdf():
 
     toPrinter = False
     toPdf = True
-    handle_generate(toPrinter, toPdf)
+    isCodeOfConduct = False
+    handle_generate(toPrinter, toPdf, isCodeOfConduct)
+
+
+##
+def handle_click_conduct():
+    global status_string
+    status_string.set('creating code of conduct')
+
+    toPrinter = printer_selected.get()
+    toPdf = False
+    isCodeOfConduct = True
+    handle_generate(toPrinter, toPdf, isCodeOfConduct)
 
 
 ##
 def handle_click_print():
     global status_string
-
     status_string.set('printing on device: ' + printer_selected.get())
-    handle_generate(printer_selected.get(), False)
+
+    toPrinter = printer_selected.get()
+    toPdf = False
+    isCodeOfConduct = False
+    handle_generate(toPrinter, toPdf, isCodeOfConduct)
 
 
 ##
@@ -243,8 +260,7 @@ def switch_page(direction):
 
 
 ##
-def handle_generate(toPrinter, toPdf):
-
+def handle_generate(toPrinter, toPdf, isCodeOfConduct):
     temp_list = []
     global form, status_string
 
@@ -265,7 +281,10 @@ def handle_generate(toPrinter, toPdf):
         "payment_list": temp_list,
     }
 
-    response = form_logic.generate(fill_info, form['include_taxes'].get(), form['open_output_switch'].get(), toPrinter, toPdf)
+    isTaxIncluded = form['include_taxes'].get()
+    isOpenOutputActive = form['open_output_switch'].get()
+
+    response = form_logic.generate(fill_info, isTaxIncluded, isOpenOutputActive, toPrinter, toPdf, isCodeOfConduct)
 
     if toPrinter == False:
         if response == False:
@@ -306,8 +325,25 @@ def handle_click_test_print():
     global form, status_string, printer_selected
     status_string.set("printing test")
 
+    # defining the file path
+    file_path = os.getcwd() + '\\assets\\test.docx'
+
+    # delete any file called test.docx in case it already exists and has contents
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # create a new document with nothing in it
+    document = Document()
+    document.save(file_path)
+
+    # print the blank document
     win32print.SetDefaultPrinter(printer_selected.get())
-    win32api.ShellExecute(0, "print", os.getcwd() + '\\assets\\test.docx', None,  ".",  0)
+    win32api.ShellExecute(0, "print", file_path, None,  ".",  0)
+
+    # add a delay so that the print command has time to find the file, then remove the document
+    time.sleep(2)
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 
 ##
@@ -488,7 +524,7 @@ def render_form():
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40
     form['open_output_switch'].place(x=660, y=y_offset)
-    y_offset += 90
+    y_offset += 50
     form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['test_data_btn'].place(x=660, y=y_offset)
@@ -506,6 +542,8 @@ def render_form():
     form['docx_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['pdf_btn'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['conduct_btn'].place(x=660, y=y_offset)
 
     form['frame_status'].place(x=20, y=490)
     form['status_label'].place(x=10, y=1)
@@ -586,6 +624,7 @@ def init_form():
     form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=120)
     form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
     form['pdf_btn'] = ctk.CTkButton(master=root, text="Save PDF", border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=120)
+    form['conduct_btn'] = ctk.CTkButton(master=root, text="Print Conduct", border_width=0, corner_radius=4, fg_color="#1A8405", command=handle_click_conduct, width=120)
 
     form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
     current_frame = form['frame_status']
