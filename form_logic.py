@@ -17,7 +17,7 @@ def validate(fill_info):
             popup(icon="cancel", title="Error", message="Invalid email address", corner_radius=4)
             print("Invalid email address")
             return False
-        
+
         if (key == "payment_list"):
             for index in range(len(fill_info['payment_list'])):
                 current_pay = fill_info['payment_list'][index]

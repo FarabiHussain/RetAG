@@ -524,25 +524,23 @@ def render_form():
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40
     form['open_output_switch'].place(x=660, y=y_offset)
+    y_offset += 40
+    form['printer_dropdown'].place(x=660, y=y_offset)
+
     y_offset += 50
     form['test_print_btn'].place(x=660, y=y_offset)
     y_offset += 40
     form['test_data_btn'].place(x=660, y=y_offset)
-    y_offset += 40
+
+    y_offset += 190
     form['history_btn'].place(x=660, y=y_offset)
-    y_offset += 40
-    form['output_btn'].place(x=660, y=y_offset)
-    y_offset += 40
-    form['clear_btn'].place(x=660, y=y_offset)
-    y_offset += 40
-    form['printer_dropdown'].place(x=660, y=y_offset)
-    y_offset += 40
+    form['output_btn'].place(x=702, y=y_offset)
+    form['clear_btn'].place(x=744, y=y_offset)
+    y_offset += 42
     form['print_btn'].place(x=660, y=y_offset)
-    y_offset += 40
-    form['docx_btn'].place(x=660, y=y_offset)
-    y_offset += 40
-    form['pdf_btn'].place(x=660, y=y_offset)
-    y_offset += 40
+    form['docx_btn'].place(x=702, y=y_offset)
+    form['pdf_btn'].place(x=744, y=y_offset)
+    y_offset += 42
     form['conduct_btn'].place(x=660, y=y_offset)
 
     form['frame_status'].place(x=20, y=490)
@@ -606,7 +604,19 @@ def init_form():
             'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
         })
 
+    ## button images
+    history_icon = tk.PhotoImage(file=resource_path("assets\\icons\\history.png"))
+    folder_icon = tk.PhotoImage(file=resource_path("assets\\icons\\folder.png"))
+    clear_icon = tk.PhotoImage(file=resource_path("assets\\icons\\clear.png"))
+    pdf_icon = tk.PhotoImage(file=resource_path("assets\\icons\\pdf.png"))
+    docx_icon = tk.PhotoImage(file=resource_path("assets\\icons\\docx.png"))
+    prnt_icon = tk.PhotoImage(file=resource_path("assets\\icons\\print.png"))
+    conduct_icon = tk.PhotoImage(file=resource_path("assets\\icons\\conduct.png"))
+
+
     ## buttons
+    button_size = 36
+
     form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_today, width=60, height=25)
     form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_500dollars, width=60, height=25)
     form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_1000dollars, width=60, height=25)
@@ -617,14 +627,15 @@ def init_form():
     form['test_data_btn'] = ctk.CTkButton(master=root, text="Enter Test Data", border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120)
     form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
     form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
-    form['history_btn'] = ctk.CTkButton(master=root, text="History", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=120)
-    form['output_btn'] = ctk.CTkButton(master=root, text="Output Folder", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=120)
-    form['clear_btn'] = ctk.CTkButton(master=root, text="Clear Form", border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=120)
     form['printer_dropdown'] = ctk.CTkComboBox(master=root, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected, width=120)
-    form['print_btn'] = ctk.CTkButton(master=root, text="Print", border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=120)
-    form['docx_btn'] = ctk.CTkButton(master=root, text="Save DOCX", border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=120)
-    form['pdf_btn'] = ctk.CTkButton(master=root, text="Save PDF", border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=120)
-    form['conduct_btn'] = ctk.CTkButton(master=root, text="Print Conduct", border_width=0, corner_radius=4, fg_color="#1A8405", command=handle_click_conduct, width=120)
+
+    form['history_btn'] = ctk.CTkButton(master=root, text="", image=history_icon, border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=button_size, height=button_size)
+    form['output_btn'] = ctk.CTkButton(master=root, text="", image=folder_icon, border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=button_size, height=button_size)
+    form['clear_btn'] = ctk.CTkButton(master=root, text="", image=clear_icon, border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=button_size, height=button_size)
+    form['print_btn'] = ctk.CTkButton(master=root, text="", image=prnt_icon, border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=button_size, height=button_size)
+    form['docx_btn'] = ctk.CTkButton(master=root, text="", image=docx_icon, border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=button_size, height=button_size)
+    form['pdf_btn'] = ctk.CTkButton(master=root, text="", image=pdf_icon, border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=button_size, height=button_size)
+    form['conduct_btn'] = ctk.CTkButton(master=root, text="", image=conduct_icon, border_width=0, corner_radius=4, fg_color="#1A8405", command=handle_click_conduct, width=120, height=button_size)
 
     form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
     current_frame = form['frame_status']
