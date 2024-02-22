@@ -51,7 +51,7 @@ def cleanup(cwd, isInitial = False):
 ##
 def install_dependencies():
     os.system('cls')
-    for library in ['pyinstaller', 'python-dateutil', 'python-docx', 'docx2pdf', 'customtkinter', 'CTkTable', 'CTkMessagebox']:
+    for library in ['pyinstaller', 'python-dateutil', 'python-docx', 'docx2pdf', 'customtkinter', 'CTkTable', 'CTkMessagebox', 'pandas']:
         print("installing dependency: " + library)
         check_call(['pip', 'install', library], stdout=DEVNULL, stderr=STDOUT)
     print("done")

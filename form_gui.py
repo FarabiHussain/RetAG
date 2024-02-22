@@ -143,6 +143,7 @@ def handle_click_history():
                     entry['is_active'],
                 ])
 
+            form['inactive_filter_btn'] = ctk.CTkButton(master=history_window, text="show only inactive", border_width=1, corner_radius=4, fg_color='transparent', command=show_only_inactive, width=60)
             form['inactive_btn'] = ctk.CTkButton(master=history_window, text="inactive", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(False), width=60)
             form['active_btn'] = ctk.CTkButton(master=history_window, text="active", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(True), width=60)
             form['import_btn'] = ctk.CTkButton(master=history_window, text="import", border_width=1, corner_radius=4, fg_color='transparent', command=handle_click_import, width=60)
@@ -164,7 +165,8 @@ def handle_click_history():
 
             form['row_selector'] = CTkTableRowSelector(history_table_frame, max_selection=1)
 
-            history_table_frame.pack(expand=True, fill="both", padx=20, pady=[20,60])
+            history_table_frame.pack(expand=False, fill="both", padx=20, pady=[20,60])
+            form['inactive_filter_btn'].place(x=20, y=505)
             form['inactive_btn'].place(x=660, y=505)
             form['active_btn'].place(x=740, y=505)
             form['import_btn'].place(x=820, y=505)
@@ -185,6 +187,42 @@ def handle_click_history():
 
         else:
             history_window.focus()
+
+
+##
+def show_only_inactive():
+    global form, history_entries, history_table_frame
+
+    inactive_entries = [['created by','created date','client','type','fee','active']]
+
+
+    for index, entry in enumerate(history_entries):
+        if (str(entry['is_active']).lower() == 'false'):
+            print(str(index) + " is inactive")
+            inactive_entries.append([
+            entry['created_by'],
+            entry['created_date'],
+            entry['client_name'],
+            entry['application_type'],
+            entry['application_fee'],
+            entry['is_active'],
+        ])
+
+    history_table_frame.destroy()
+
+    history_table_frame = CTkTable(
+        master=history_window, 
+        row=len(inactive_entries), 
+        column=len(inactive_entries[0]), 
+        values=inactive_entries, 
+        corner_radius=4, 
+        header_color="#5e5e5e",
+        hover_color="#1f538d",
+    )
+
+    # history_table_frame.configure(row=len(inactive_entries))
+    # history_table_frame.update_values(inactive_entries)
+
 
 
 ##
@@ -234,9 +272,9 @@ def toggle_active(set_to):
 
                 break
 
-    # if (matching_index == -1 and len(selected_row) > 0):
-    #     popup(title="Failed", message="Error finding the row", corner_radius=4)
-    #     history_window.destroy()
+        if (matching_index == -1 and len(selected_row) > 0):
+            popup(title="Failed", message="Error finding the row", corner_radius=4)
+            history_window.destroy()
 
 
 ## 
