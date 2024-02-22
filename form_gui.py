@@ -5,7 +5,7 @@ from CTkTable import *
 from CTkTableRowSelector import *
 from CTkMessagebox import CTkMessagebox as popup
 from dateutil import relativedelta as rd
-import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random, time
+import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random, time, pandas as pd
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
@@ -69,7 +69,7 @@ def handle_click_print():
         print_window = ctk.CTkToplevel()
 
         w = 240
-        h = 160
+        h = 170
         x = (ws/2) - (w/2)
         y = (hs/2) - (h/2)
 
@@ -80,7 +80,7 @@ def handle_click_print():
         print_window.resizable(False, False)
         print_window.after(100, lambda: print_window.focus())
 
-        form['frame_printer'] = ctk.CTkFrame(print_window, width=220, height=140)
+        form['frame_printer'] = ctk.CTkFrame(print_window, width=220, height=150)
         form['frame_printer'].place(x=10, y=10)
 
         form['select_device_label'] = ctk.CTkLabel(print_window, text="Select Device", bg_color='#212121', fg_color='#212121')
@@ -89,8 +89,11 @@ def handle_click_print():
         form['printer_dropdown'] = ctk.CTkComboBox(print_window, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected)
         form['printer_dropdown'].pack(padx=10, pady=[5,10])
 
-        form['print_on_device_btn'] = ctk.CTkButton(print_window, text="Confirm", border_width=0, corner_radius=4, command=send_to_device)
-        form['print_on_device_btn'].pack(padx=10)
+        form['print_on_device_btn'] = ctk.CTkButton(print_window, text="Confirm", border_width=0, corner_radius=4, command=send_to_device, width=60, height=40)
+        form['print_on_device_btn'].place(x=50, y=100)
+
+        form['test_print_btn'] = ctk.CTkButton(print_window, text="", image=icon['test_prnt_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_print, width=60, height=40)
+        form['test_print_btn'].place(x=130, y=100)
 
     else:
         print_window.focus()
@@ -128,7 +131,7 @@ def handle_click_history():
         if (history_window is None or not history_window.winfo_exists()): 
             history_window = ctk.CTkToplevel()
 
-            history_table_contents = [['created by','created date','client name','application type','application fee']]
+            history_table_contents = [['created by','created date','client','type','fee','active']]
 
             for entry in history_entries[table_ranges['start'] : table_ranges['end']]:
                 history_table_contents.append([
@@ -137,14 +140,17 @@ def handle_click_history():
                     entry['client_name'],
                     entry['application_type'],
                     entry['application_fee'],
+                    entry['is_active'],
                 ])
 
+            form['inactive_btn'] = ctk.CTkButton(master=history_window, text="inactive", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(False), width=60)
+            form['active_btn'] = ctk.CTkButton(master=history_window, text="active", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(True), width=60)
             form['import_btn'] = ctk.CTkButton(master=history_window, text="import", border_width=1, corner_radius=4, fg_color='transparent', command=handle_click_import, width=60)
             form['prev_btn'] = ctk.CTkButton(master=history_window, text="<", border_width=0, corner_radius=4, fg_color='transparent', command=handle_click_prev, width=30, state='disabled')
             form['next_btn'] = ctk.CTkButton(master=history_window, text=">", border_width=1, corner_radius=4, fg_color="transparent", command=handle_click_next, width=30, state='normal')
 
             if len(history_entries) < 15:
-                form['next_btn'].configure(fg_color='transparent', state='disabled', text_color="black", image=icon['nextDark_icon'], border_width=0)
+                form['next_btn'].configure(fg_color='transparent', state='disabled', border_width=0)
 
             history_table_frame = CTkTable(
                 master=history_window, 
@@ -158,15 +164,17 @@ def handle_click_history():
 
             form['row_selector'] = CTkTableRowSelector(history_table_frame, max_selection=1)
 
-            history_table_frame.pack(padx=20, pady=20)
-            form['import_btn'].place(x=590, y=490)
-            form['prev_btn'].place(x=670, y=490)
-            form['next_btn'].place(x=720, y=490)
+            history_table_frame.pack(expand=True, fill="both", padx=20, pady=[20,60])
+            form['inactive_btn'].place(x=660, y=505)
+            form['active_btn'].place(x=740, y=505)
+            form['import_btn'].place(x=820, y=505)
+            form['prev_btn'].place(x=900, y=505)
+            form['next_btn'].place(x=950, y=505)
 
-            w = 800
-            h = 540
-            x = (ws/2) - (w/2) + 50
-            y = (hs/2) - (h/2) + 50
+            w = 1000
+            h = 550
+            x = (ws/2) - (w/2)
+            y = (hs/2) - (h/2) + 40
 
             history_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
             history_window.focus()
@@ -177,6 +185,58 @@ def handle_click_history():
 
         else:
             history_window.focus()
+
+
+##
+def toggle_active(set_to):
+    global form, history_entries, history_table_frame
+
+    selected_row = form['row_selector'].get()
+    matching_index = -1
+
+    if (len(selected_row) == 0):
+        popup(title="Failed", message="No row is selected", corner_radius=4)
+
+    else:
+        selected_row_data = {
+            'created_by': selected_row[0][0],
+            'created_date': selected_row[0][1],
+            'client_name': selected_row[0][2],
+            'application_type': selected_row[0][3],
+            'application_fee': selected_row[0][4],
+            'is_active': selected_row[0][5],
+        }
+
+        for index, entry in enumerate(history_entries):
+            if (
+                entry['created_by'] == selected_row_data['created_by']
+                and entry['created_date'] == selected_row_data['created_date']
+                and entry['client_name'] == selected_row_data['client_name']
+                and entry['application_type'] == selected_row_data['application_type']
+                and entry['application_fee'] == selected_row_data['application_fee']
+            ):
+                matching_index = index
+                active_status_index = 5
+
+                # add 1 to the index to account for the heading column
+                history_table_frame.insert(
+                    (matching_index + 1), 
+                    active_status_index, 'False' if set_to == 0 else 'True',
+                    fg_color="#5f94cf"
+                )
+
+                history_entries[index]['is_active'] == 'False' if set_to == 0 else 'True'
+
+                file_location = os.getcwd() + "\\logs\\history.csv"
+                df = pd.read_csv(file_location)
+                df.loc[matching_index, 'is_active'] = (set_to)
+                df.to_csv(file_location, index=False) 
+
+                break
+
+    # if (matching_index == -1 and len(selected_row) > 0):
+    #     popup(title="Failed", message="Error finding the row", corner_radius=4)
+    #     history_window.destroy()
 
 
 ## 
@@ -195,7 +255,7 @@ def handle_click_import():
             'created_date': selected_row[0][1],
             'client_name': selected_row[0][2],
             'application_type': selected_row[0][3],
-            'application_fee': selected_row[0][4]
+            'application_fee': selected_row[0][4],
         }
 
         for entry in history_entries:
@@ -227,6 +287,7 @@ def import_match(matching_entry):
     form['email_address'].delete(0, 'end')
     form['phone_number'].delete(0, 'end')
     form['include_taxes'].set(True)
+    form['is_active'].set(False)
 
     form['document_date'].insert(0, matching_entry['date_on_document'])
     form['client_name'].insert(0, matching_entry['client_name'])
@@ -235,6 +296,7 @@ def import_match(matching_entry):
     form['email_address'].insert(0, matching_entry['email'])
     form['phone_number'].insert(0, matching_entry['phone'])
 
+    # set the payments
     for i in range(12):
         form['payment_list'][i]['date'].delete(0, 'end')
         form['payment_list'][i]['amount'].delete(0, 'end')
@@ -242,10 +304,17 @@ def import_match(matching_entry):
         form['payment_list'][i]['date'].insert(0, matching_entry['date_' + str(i + 1)])
         form['payment_list'][i]['amount'].insert(0, matching_entry['amount_' + str(i + 1)])
 
-    if (matching_entry['add_taxes'] == 'True'):
+    # set the taxes switch
+    if (matching_entry['add_taxes'].lower() == 'true'):
         form['include_taxes'].set(True)
     else:
         form['include_taxes'].set(False)
+
+    # set the active switch
+    if (matching_entry['is_active'].lower() == 'true'):
+        form['is_active'].set(True)
+    else:
+        form['is_active'].set(False)
 
 
 ## 
@@ -284,7 +353,7 @@ def switch_page(direction):
             form['prev_btn'].configure(state='disabled', fg_color='transparent', border_width=0)
             form['next_btn'].configure(state='normal', fg_color='transparent', border_width=1)
 
-    history_table_contents = [['created by','created date','client name','application type','application fee']]
+    history_table_contents = [['created by','created date','client','type','fee','active']]
     for entry in history_entries[table_ranges['start'] : table_ranges['end']]:
         history_table_contents.append([
             entry['created_by'],
@@ -292,6 +361,7 @@ def switch_page(direction):
             entry['client_name'],
             entry['application_type'],
             entry['application_fee'],
+            entry['is_active'],
         ])
 
     history_table_frame.update_values(history_table_contents)
@@ -321,8 +391,9 @@ def handle_generate(toPrinter, toPdf, isCodeOfConduct):
 
     isTaxIncluded = form['include_taxes'].get()
     isOpenOutputActive = form['open_output_switch'].get()
+    isRetainerActive = form['active_switch'].get()
 
-    response = form_logic.generate(fill_info, isTaxIncluded, isOpenOutputActive, toPrinter, toPdf, isCodeOfConduct)
+    response = form_logic.generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct)
 
     if toPrinter == False:
         if response == False:
@@ -557,17 +628,20 @@ def render_form():
     form['500_btn'].place(x=180, y=260)
     form['1000_btn'].place(x=250, y=260)
     form['advance_btn'].place(x=568, y=67)
-    # form['plus_month_btn'].place(x=568, y=101)
+
     y_offset = 40
     form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40
     form['open_output_switch'].place(x=660, y=y_offset)
     y_offset += 40
-    # form['printer_dropdown'].place(x=660, y=y_offset)
+    form['active_switch'].place(x=660, y=y_offset)
+    y_offset += 40
 
-    y_offset += 238
-    form['test_print_btn'].place(x=660, y=y_offset)
-    form['test_data_btn'].place(x=724, y=y_offset)
+    # buffer
+    buffer = 358
+
+    y_offset += (buffer - y_offset)
+    form['test_data_btn'].place(x=660, y=y_offset)
     y_offset += 42
     form['history_btn'].place(x=660, y=y_offset)
     form['output_btn'].place(x=702, y=y_offset)
@@ -579,6 +653,7 @@ def render_form():
     y_offset += 42
     form['conduct_btn'].place(x=660, y=y_offset)
 
+    # frame
     form['frame_status'].place(x=20, y=490)
     form['status_label'].place(x=10, y=1)
 
@@ -605,6 +680,7 @@ def init_form():
     form['autofill_date'].trace_add('write', autofill_first_date)
     form['include_taxes'] = BooleanVar(value=True)
     form['open_output'] = BooleanVar(value=True)
+    form['is_active'] = BooleanVar(value=False)
 
     ## left frame
     form['frame_info'] = ctk.CTkFrame(master=root, width=300, height=440)
@@ -660,10 +736,7 @@ def init_form():
     form['advance_btn'] = ctk.CTkButton(master=root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
     form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
 
-    form['test_print_btn'] = ctk.CTkButton(master=root, text="", image=icon['test_prnt_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_print, width=button_size + 20, height=button_size)
-    form['test_data_btn'] = ctk.CTkButton(master=root, text="", image=icon['test_data_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=button_size + 20, height=button_size)
-    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
-    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
+    form['test_data_btn'] = ctk.CTkButton(master=root, text="", image=icon['test_data_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120, height=button_size)
 
     form['history_btn'] = ctk.CTkButton(master=root, text="", image=icon['history_icon'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=button_size, height=button_size)
     form['output_btn'] = ctk.CTkButton(master=root, text="", image=icon['folder_icon'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=button_size, height=button_size)
@@ -672,6 +745,11 @@ def init_form():
     form['docx_btn'] = ctk.CTkButton(master=root, text="", image=icon['docx_icon'], border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=button_size, height=button_size)
     form['pdf_btn'] = ctk.CTkButton(master=root, text="", image=icon['pdf_icon'], border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=button_size, height=button_size)
     form['conduct_btn'] = ctk.CTkButton(master=root, text="", image=icon['conduct_icon'], border_width=0, corner_radius=4, fg_color="#1A8405", command=handle_click_conduct, width=120, height=button_size)
+
+    ## switches
+    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
+    form['active_switch'] = ctk.CTkSwitch(master=root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['is_active'])
 
     form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
     current_frame = form['frame_status']

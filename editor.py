@@ -6,9 +6,9 @@ import datetime, os, sys, win32api, win32print, csv
 
 
 ## generate the docx with the input info
-def process(form, include_taxes, open_output, toPrinter, toPdf, isCodeOfConduct):
+def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct):
     try:
-        init_data = init(form, include_taxes, isCodeOfConduct)
+        init_data = init(form, isTaxIncluded, isCodeOfConduct)
         doc = Document(init_data['input_file'])
 
         for paragraph in doc.paragraphs:
@@ -36,10 +36,10 @@ def process(form, include_taxes, open_output, toPrinter, toPdf, isCodeOfConduct)
             win32api.ShellExecute(0, "print", output_dir + init_data['output_file'], None,  ".",  0)
 
         # open the word file
-        if open_output:
+        if isOpenOutputActive:
             os.startfile(output_dir + init_data['output_file'])
 
-        write_to_history(form, include_taxes, toPdf)
+        write_to_history(form, isTaxIncluded, isRetainerActive, toPdf)
 
         # return the filename
         return init_data['output_file']
@@ -51,7 +51,7 @@ def process(form, include_taxes, open_output, toPrinter, toPdf, isCodeOfConduct)
 
 
 ## 
-def write_to_history(form, include_taxes, toPdf):
+def write_to_history(form, isTaxIncluded, isRetainerActive, toPdf):
 
     # set up the log directory
     logs_dir = os.getcwd() + "\\logs\\"
@@ -82,7 +82,7 @@ def write_to_history(form, include_taxes, toPdf):
     history_entry.append(str(form['application_fee']))
     history_entry.append(str(form['email_address']))
     history_entry.append(str(form['phone_number']))
-    history_entry.append(str(include_taxes))
+    history_entry.append(str(isTaxIncluded))
 
     for i in range(12):
         if (i < len(form['payment_list'])): 
@@ -94,6 +94,7 @@ def write_to_history(form, include_taxes, toPdf):
             history_entry.append("")
 
     history_entry.append("PDF" if toPdf else "DOCX")
+    history_entry.append(str(isRetainerActive))
 
     with open(logs_dir + "\\history.csv", "a") as history:
         history_entry = (',').join(history_entry)
@@ -102,7 +103,7 @@ def write_to_history(form, include_taxes, toPdf):
 
 
 ## initializes the fill info, output and input files
-def init(form, include_taxes, isCodeOfConduct):
+def init(form, isTaxIncluded, isCodeOfConduct):
     date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
 
     # data needed in both retainers and conducts
@@ -121,7 +122,7 @@ def init(form, include_taxes, isCodeOfConduct):
     if not isCodeOfConduct:
         input_data['[DAY]'] = format_day(date_on_document.strftime("%d"))
         input_data['[MONTH]'] = date_on_document.strftime("%B")
-        input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], include_taxes)
+        input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], isTaxIncluded)
         input_data['[APP_FEE]'] = format_cents(form["application_fee"])
         input_data['[TAXED]'] = add_taxes(form["application_fee"])
         input_data['[EMAIL]'] = form["email_address"]
@@ -138,10 +139,10 @@ def init(form, include_taxes, isCodeOfConduct):
 
 
 ## formats the list of data so that it can be displayed on the output document
-def format_payments(payments, include_taxes):
+def format_payments(payments, isTaxIncluded):
     payments_string = "Payment of CAN $[TAXED] to be paid in " + format_date(payments[0]['date']) + ", after signing the retainer, is non-refundable."
 
-    if (include_taxes == False):
+    if (isTaxIncluded == False):
         payments_string.replace('[TAXED]', '[APP_FEE]')
 
     if (len(payments) > 1):
@@ -151,7 +152,7 @@ def format_payments(payments, include_taxes):
             current_payment = payments[i]
             current_amount_taxed = float(current_payment['amount'])
 
-            if (include_taxes):
+            if (isTaxIncluded):
                 current_amount_taxed += float(current_payment['amount']) * 0.12
 
             current_payment_date = format_date(current_payment['date'])
