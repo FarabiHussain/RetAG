@@ -82,7 +82,7 @@ def write_to_history(form, isTaxIncluded, isRetainerActive, toPdf):
     history_entry.append(str(form['application_fee']))
     history_entry.append(str(form['email_address']))
     history_entry.append(str(form['phone_number']))
-    history_entry.append(str(isTaxIncluded))
+    history_entry.append(str(isTaxIncluded).title())
 
     for i in range(12):
         if (i < len(form['payment_list'])): 
@@ -94,7 +94,7 @@ def write_to_history(form, isTaxIncluded, isRetainerActive, toPdf):
             history_entry.append("")
 
     history_entry.append("PDF" if toPdf else "DOCX")
-    history_entry.append(str(isRetainerActive))
+    history_entry.append(str(isRetainerActive).title())
 
     with open(logs_dir + "\\history.csv", "a") as history:
         history_entry = (',').join(history_entry)

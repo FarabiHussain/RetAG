@@ -6,4 +6,4 @@
 *.spec
 *.zip
 *.pdf
-*.csv
+# *.csv

@@ -24,8 +24,10 @@ current_payment_index = 1
 current_plus_month_posy = 101
 history_window = None
 history_entries = None
+filtered_entries = None
 history_table_frame = None
 print_window = None
+filters = {'only_inactive': False}
 
 
 ##
@@ -121,6 +123,7 @@ def handle_click_output_folder():
 def handle_click_history():
     global history_window, history_entries, status_string, history_table_frame, form, icon
     status_string.set('opened history')
+    os.system('cls')
 
     history_entries = form_logic.get_history()
 
@@ -140,10 +143,10 @@ def handle_click_history():
                     entry['client_name'],
                     entry['application_type'],
                     entry['application_fee'],
-                    entry['is_active'],
+                    entry['is_active'].title(),
                 ])
 
-            form['inactive_filter_btn'] = ctk.CTkButton(master=history_window, text="show only inactive", border_width=1, corner_radius=4, fg_color='transparent', command=show_only_inactive, width=60)
+            form['inactive_filter_btn'] = ctk.CTkButton(master=history_window, text="show only inactive", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:show_only_inactive(history_table_contents), width=120)
             form['inactive_btn'] = ctk.CTkButton(master=history_window, text="inactive", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(False), width=60)
             form['active_btn'] = ctk.CTkButton(master=history_window, text="active", border_width=1, corner_radius=4, fg_color='transparent', command=lambda:toggle_active(True), width=60)
             form['import_btn'] = ctk.CTkButton(master=history_window, text="import", border_width=1, corner_radius=4, fg_color='transparent', command=handle_click_import, width=60)
@@ -155,7 +158,7 @@ def handle_click_history():
 
             history_table_frame = CTkTable(
                 master=history_window, 
-                row=len(history_table_contents), 
+                row=16, 
                 column=len(history_table_contents[0]), 
                 values=history_table_contents, 
                 corner_radius=4, 
@@ -190,39 +193,33 @@ def handle_click_history():
 
 
 ##
-def show_only_inactive():
-    global form, history_entries, history_table_frame
+def show_only_inactive(history_table_contents):
+    global form, history_entries, history_table_frame, filters, filtered_entries
 
-    inactive_entries = [['created by','created date','client','type','fee','active']]
+    filtered_entries = [['created by','created date','client','type','fee','active']]
 
+    if (filters['only_inactive'] == False):
+        for entry in (history_entries):
+            if (str(entry['is_active']).lower() == 'false'):
+                filtered_entries.append([
+                    entry['created_by'],
+                    entry['created_date'],
+                    entry['client_name'],
+                    entry['application_type'],
+                    entry['application_fee'],
+                    entry['is_active'].title(),
+                ])
 
-    for index, entry in enumerate(history_entries):
-        if (str(entry['is_active']).lower() == 'false'):
-            print(str(index) + " is inactive")
-            inactive_entries.append([
-            entry['created_by'],
-            entry['created_date'],
-            entry['client_name'],
-            entry['application_type'],
-            entry['application_fee'],
-            entry['is_active'],
-        ])
+        form['inactive_filter_btn'].configure(border_width=0, fg_color='white', text_color='black', text="show all")
+        filters['only_inactive'] = True
 
-    history_table_frame.destroy()
+    else:
+        filtered_entries = history_table_contents
+        form['inactive_filter_btn'].configure(border_width=1, fg_color='transparent', text_color='white', text="show only inactive")
+        filters['only_inactive'] = False
 
-    history_table_frame = CTkTable(
-        master=history_window, 
-        row=len(inactive_entries), 
-        column=len(inactive_entries[0]), 
-        values=inactive_entries, 
-        corner_radius=4, 
-        header_color="#5e5e5e",
-        hover_color="#1f538d",
-    )
-
-    # history_table_frame.configure(row=len(inactive_entries))
-    # history_table_frame.update_values(inactive_entries)
-
+    form['row_selector'].clear_selection()
+    history_table_frame.update_values(filtered_entries)
 
 
 ##
@@ -230,7 +227,12 @@ def toggle_active(set_to):
     global form, history_entries, history_table_frame
 
     selected_row = form['row_selector'].get()
+    print(selected_row)
+    form['row_selector'].clear_selection()
+    matching_inactive_index = -1
     matching_index = -1
+    index_of_flag = 5
+
 
     if (len(selected_row) == 0):
         popup(title="Failed", message="No row is selected", corner_radius=4)
@@ -242,10 +244,15 @@ def toggle_active(set_to):
             'client_name': selected_row[0][2],
             'application_type': selected_row[0][3],
             'application_fee': selected_row[0][4],
-            'is_active': selected_row[0][5],
+            'is_active': (selected_row[0][5]).title(),
         }
 
         for index, entry in enumerate(history_entries):
+
+            if (filters['only_inactive'] == True):
+                if (str(entry['is_active']).title() == 'False'): 
+                    matching_inactive_index += 1
+
             if (
                 entry['created_by'] == selected_row_data['created_by']
                 and entry['created_date'] == selected_row_data['created_date']
@@ -254,27 +261,39 @@ def toggle_active(set_to):
                 and entry['application_fee'] == selected_row_data['application_fee']
             ):
                 matching_index = index
-                active_status_index = 5
 
                 # add 1 to the index to account for the heading column
-                history_table_frame.insert(
-                    (matching_index + 1), 
-                    active_status_index, 'False' if set_to == 0 else 'True',
-                    fg_color="#5f94cf"
-                )
+                index_to_change = matching_index + 1
+                if (filters['only_inactive'] == True):
+                    index_to_change = matching_inactive_index + 1
 
-                history_entries[index]['is_active'] == 'False' if set_to == 0 else 'True'
+                print('matching_index: ' + str(matching_index))
+                print('matching_inactive_index: ' + str(matching_inactive_index))
 
-                file_location = os.getcwd() + "\\logs\\history.csv"
-                df = pd.read_csv(file_location)
-                df.loc[matching_index, 'is_active'] = (set_to)
-                df.to_csv(file_location, index=False) 
+    #             # change the value on the table
+    #             history_table_frame.insert(
+    #                 index_to_change, 
+    #                 index_of_flag, 
+    #                 'False' if set_to == 0 else 'True',
+    #             )
 
-                break
+    #             # change the value on the buffer
+    #             history_entries[index]['is_active'] == 'False' if set_to == 0 else 'True'
 
-        if (matching_index == -1 and len(selected_row) > 0):
-            popup(title="Failed", message="Error finding the row", corner_radius=4)
-            history_window.destroy()
+    #             # write the change to file
+    #             file_location = os.getcwd() + "\\logs\\history.csv"
+    #             df = pd.read_csv(file_location)
+    #             df.loc[(index_to_change-1), 'is_active'] = set_to
+    #             df.to_csv(file_location, index=False) 
+
+    #             # read the file again to repopulate with new changes
+    #             history_entries = form_logic.get_history()
+
+    #             break
+
+    #     if (matching_index == -1 and len(selected_row) > 0):
+    #         popup(title="Failed", message="Error finding the row", corner_radius=4)
+    #         history_window.destroy()
 
 
 ## 
@@ -282,6 +301,7 @@ def handle_click_import():
     global form, history_entries
 
     selected_row = form['row_selector'].get()
+    form['row_selector'].clear_selection()
     matching_entry = None
 
     if (len(selected_row) == 0):
@@ -367,7 +387,9 @@ def handle_click_prev():
 
 ##
 def switch_page(direction):
-    global table_ranges, history_table_frame, icon
+    global form, table_ranges, history_table_frame, icon
+
+    form['row_selector'].clear_selection()
 
     if (direction == 'next'):
         # navigate if a page is available
@@ -392,15 +414,19 @@ def switch_page(direction):
             form['next_btn'].configure(state='normal', fg_color='transparent', border_width=1)
 
     history_table_contents = [['created by','created date','client','type','fee','active']]
+
     for entry in history_entries[table_ranges['start'] : table_ranges['end']]:
-        history_table_contents.append([
+
+        current_row = [
             entry['created_by'],
             entry['created_date'],
             entry['client_name'],
             entry['application_type'],
             entry['application_fee'],
-            entry['is_active'],
-        ])
+            entry['is_active'].title(),
+        ]
+
+        history_table_contents.append(current_row)
 
     history_table_frame.update_values(history_table_contents)
 
