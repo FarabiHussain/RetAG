@@ -2,13 +2,13 @@ from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
 from docx2pdf import convert
-import datetime, os, sys, win32api, win32print, csv
+import datetime, os, sys, win32api, win32print, csv, history_logic as history
 
 
 ## generate the docx with the input info
-def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct):
+def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
     try:
-        init_data = init(form, isTaxIncluded, isCodeOfConduct)
+        init_data = init(form, isTaxIncluded, is_code_of_conduct)
         doc = Document(init_data['input_file'])
 
         for paragraph in doc.paragraphs:
@@ -25,21 +25,21 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter
         # save the file to the output folder
         doc.save(output_dir + init_data['output_file'])
 
-        if toPdf:
+        if to_pdf:
             sys.stderr = open(os.devnull, "w")
             convert(output_dir + init_data['output_file'])
             os.remove(output_dir + init_data['output_file'])
             init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
 
-        if toPrinter or isCodeOfConduct:
-            win32print.SetDefaultPrinter(toPrinter)
+        if to_printer or is_code_of_conduct:
+            win32print.SetDefaultPrinter(to_printer)
             win32api.ShellExecute(0, "print", output_dir + init_data['output_file'], None,  ".",  0)
 
         # open the word file
         if isOpenOutputActive:
             os.startfile(output_dir + init_data['output_file'])
 
-        write_to_history(form, isTaxIncluded, isRetainerActive, toPdf)
+        history.insert(form, isTaxIncluded, isRetainerActive, to_pdf)
 
         # return the filename
         return init_data['output_file']
@@ -50,60 +50,8 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter
         return False
 
 
-## 
-def write_to_history(form, isTaxIncluded, isRetainerActive, toPdf):
-
-    # set up the log directory
-    logs_dir = os.getcwd() + "\\logs\\"
-    if not os.path.exists(logs_dir):
-        os.makedirs(logs_dir)
-
-    try: 
-        f = open(logs_dir + "\\history.csv", "x")
-        columns = ['created_by', 'created_date', 'date_on_document', 'client_name', 'application_type', 'application_fee', 'email', 'phone', 'add_taxes']
-
-        for i in range(12):
-            columns.append("amount_" + str(i+1))
-            columns.append("date_" + str(i+1))
-
-        columns.append("file_format")
-        f.write(",".join(columns))
-        f.close()
-
-    except Exception as e:
-        print(e)
-
-    # things to enter into the new entry
-    history_entry = [os.environ['COMPUTERNAME']]
-    history_entry.append(str(datetime.datetime.now().strftime("%Y-%b-%d %I:%M %p")))
-    history_entry.append(str(form['document_date']))
-    history_entry.append(str(form['client_name']))
-    history_entry.append(str(form['application_type']))
-    history_entry.append(str(form['application_fee']))
-    history_entry.append(str(form['email_address']))
-    history_entry.append(str(form['phone_number']))
-    history_entry.append(str(isTaxIncluded).title())
-
-    for i in range(12):
-        if (i < len(form['payment_list'])): 
-            current_payment = form['payment_list'][i]
-            history_entry.append(str(float(current_payment['amount'])))
-            history_entry.append(str(current_payment['date']))
-        else:
-            history_entry.append("")
-            history_entry.append("")
-
-    history_entry.append("PDF" if toPdf else "DOCX")
-    history_entry.append(str(isRetainerActive).title())
-
-    with open(logs_dir + "\\history.csv", "a") as history:
-        history_entry = (',').join(history_entry)
-        print(history_entry)
-        history.write("\n" + history_entry)
-
-
 ## initializes the fill info, output and input files
-def init(form, isTaxIncluded, isCodeOfConduct):
+def init(form, isTaxIncluded, is_code_of_conduct):
     date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
 
     # data needed in both retainers and conducts
@@ -119,7 +67,7 @@ def init(form, isTaxIncluded, isCodeOfConduct):
     output_file = "Code of Conduct - " + (form["client_name"]) + ".docx"
 
     # include the following if the document is a retainer agreement
-    if not isCodeOfConduct:
+    if not is_code_of_conduct:
         input_data['[DAY]'] = format_day(date_on_document.strftime("%d"))
         input_data['[MONTH]'] = date_on_document.strftime("%B")
         input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], isTaxIncluded)

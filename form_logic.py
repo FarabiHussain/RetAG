@@ -50,26 +50,11 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct):
+def generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
     if (validate(fill_info) == True):
-        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct)
+        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct)
 
     return False
-
-
-#
-def get_history():
-    logs_dir = os.getcwd() + "\\logs\\"
-
-    if not os.path.exists(logs_dir):
-        print("path does not exist")
-        return None
-    elif not os.path.exists(logs_dir + "\\history.csv"):
-        print("file does not exist")
-        return None
-    else:
-        with open(logs_dir + "\\history.csv", mode='r') as infile:
-            return list(csv.DictReader(infile))
 
 
 ## reset form fields

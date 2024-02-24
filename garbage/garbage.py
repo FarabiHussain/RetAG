@@ -1,3 +1,7 @@
+history_entries = None
+filtered_entries = None
+history_table_frame = None
+
 ##
 def handle_click_history():
     global history_window, history_entries, status_string, history_table_frame, form, icon

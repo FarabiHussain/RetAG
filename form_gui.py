@@ -5,112 +5,95 @@ from CTkTable import *
 from CTkTableRowSelector import *
 from CTkMessagebox import CTkMessagebox as popup
 from dateutil import relativedelta as rd
-import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random, time, pandas as pd
+import form_logic, customtkinter as ctk, datetime as dt, win32print, os, win32api, win32print, names, random, time, pandas as pd, history_logic as history
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("dark-blue")
 
-form = {}
-icon = {}
 root = ctk.CTk()
 root.resizable(False, False)
-ws = root.winfo_screenwidth() # width of the screen
-hs = root.winfo_screenheight() # height of the screen
-status_string = StringVar(value="Ready")
-printer_selected = StringVar(value=win32print.GetDefaultPrinter())
-printer_list = []
-version = "v0.9.0"
+
+form = {'version': "v0.9.0", 'status': StringVar(value="Ready")}
+icon = {}
+popups = {'printer': None, 'history': None}
+screen_sizes = {'ws': root.winfo_screenwidth(), 'hs': root.winfo_screenheight()}
 table_ranges = { 'start': 0, 'end': 15}
+
 current_payment_index = 1
 current_plus_month_posy = 101
-history_window = None
-history_entries = None
-filtered_entries = None
-history_table_frame = None
-print_window = None
-filters = {'only_inactive': False}
 
 
 ##
 def handle_click_docx():
-    global status_string
-    status_string.set('writing docx')
+    global form
+    form['status'].set('writing docx')
 
-    toPrinter = False
-    toPdf = False
-    isCodeOfConduct = False
-    handle_generate(toPrinter, toPdf, isCodeOfConduct)
+    to_printer = False
+    to_pdf = False
+    is_code_of_conduct = False
+    handle_generate(to_printer, to_pdf, is_code_of_conduct)
 
 
 ##
 def handle_click_pdf():
-    global status_string
-    status_string.set('creating pdf')
+    global form
+    form['status'].set('creating pdf')
 
-    toPrinter = False
-    toPdf = True
-    isCodeOfConduct = False
-    handle_generate(toPrinter, toPdf, isCodeOfConduct)
-
-
-##
-def handle_click_conduct():
-    global status_string
-    status_string.set('creating code of conduct')
-
-    toPrinter = printer_selected.get()
-    toPdf = False
-    isCodeOfConduct = True
-    handle_generate(toPrinter, toPdf, isCodeOfConduct)
+    to_printer = False
+    to_pdf = True
+    is_code_of_conduct = False
+    handle_generate(to_printer, to_pdf, is_code_of_conduct)
 
 
 ##
-def handle_click_print():
-    global print_window, form
+def handle_click_print(printer_list, to_pdf, is_code_of_conduct):
+    global popups, form
+    to_printer = StringVar(value=win32print.GetDefaultPrinter())
+    titlebar = "Print Code of Conduct" if is_code_of_conduct else "Print Retainer" 
 
-    if (print_window is None or not print_window.winfo_exists()): 
-        print_window = ctk.CTkToplevel()
+    if (popups['printer'] is None or not popups['printer'].winfo_exists()): 
+        popups['printer'] = ctk.CTkToplevel()
 
-        w = 240
-        h = 170
-        x = (ws/2) - (w/2)
-        y = (hs/2) - (h/2)
+        w = 300
+        h = 200
+        x = (screen_sizes['ws']/2) - (w/2)
+        y = (screen_sizes['hs']/2) - (h/2)
 
-        print_window.geometry('%dx%d+%d+%d' % (w, h, x, y))
-        print_window.focus()
-        print_window.after(201, lambda: print_window.iconbitmap("assets\\logo.ico"))
-        print_window.title("Print")
-        print_window.resizable(False, False)
-        print_window.after(100, lambda: print_window.focus())
+        popups['printer'].geometry('%dx%d+%d+%d' % (w, h, x, y))
+        popups['printer'].focus()
+        popups['printer'].after(201, lambda: popups['printer'].iconbitmap("assets\\logo.ico"))
+        popups['printer'].title(titlebar)
+        popups['printer'].resizable(False, False)
+        popups['printer'].after(100, lambda: popups['printer'].focus())
 
-        form['frame_printer'] = ctk.CTkFrame(print_window, width=220, height=150)
+        form['frame_printer'] = ctk.CTkFrame(popups['printer'], width=w-20, height=h-20)
         form['frame_printer'].place(x=10, y=10)
 
-        form['select_device_label'] = ctk.CTkLabel(print_window, text="Select Device", bg_color='#212121', fg_color='#212121')
-        form['select_device_label'].pack(padx=10, pady=[25,0])
+        form['select_device_label'] = ctk.CTkLabel(popups['printer'], text="Select Device", bg_color='#212121', fg_color='#212121')
+        form['select_device_label'].place(x=110, y=30)
 
-        form['printer_dropdown'] = ctk.CTkComboBox(print_window, values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=printer_selected)
-        form['printer_dropdown'].pack(padx=10, pady=[5,10])
+        form['printer_dropdown'] = ctk.CTkComboBox(popups['printer'], values=printer_list, border_width=0, corner_radius=4, fg_color='#313131', variable=to_printer)
+        form['printer_dropdown'].place(x=80, y=65)
 
-        form['print_on_device_btn'] = ctk.CTkButton(print_window, text="Confirm", border_width=0, corner_radius=4, command=send_to_device, width=60, height=40)
-        form['print_on_device_btn'].place(x=50, y=100)
+        form['print_on_device_btn'] = ctk.CTkButton(
+            popups['printer'], text="", corner_radius=4, command=lambda:send_to_device(to_printer, to_pdf, is_code_of_conduct), width=60, height=40,
+            image=(icon['printConduct'] if is_code_of_conduct else icon['printRetainer']), border_width=0, 
+            fg_color=("#1A8405" if is_code_of_conduct else "#e07b00")
+        )
+        form['print_on_device_btn'].place(x=80, y=110)
 
-        form['test_print_btn'] = ctk.CTkButton(print_window, text="", image=icon['test_prnt_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_print, width=60, height=40)
-        form['test_print_btn'].place(x=130, y=100)
+        form['test_print_btn'] = ctk.CTkButton(popups['printer'], text="", image=icon['testPrnt'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=lambda:handle_click_test_print(to_printer), width=60, height=40)
+        form['test_print_btn'].place(x=160, y=110)
 
     else:
-        print_window.focus()
+        popups['printer'].focus()
 
 
 ##
-def send_to_device():
-    global status_string
-    status_string.set('printing on device: ' + printer_selected.get())
+def send_to_device(selected_printer, to_pdf, is_code_of_conduct):
+    global form
+    form['status'].set('printing on device: ' + selected_printer)
 
-    toPrinter = printer_selected.get()
-    toPdf = False
-    isCodeOfConduct = False
-
-    handle_generate(toPrinter, toPdf, isCodeOfConduct)
+    handle_generate(selected_printer, to_pdf, is_code_of_conduct)
 
 
 ##
@@ -121,13 +104,36 @@ def handle_click_output_folder():
 
 ##
 def handle_click_history():
-    pass
+    global popups
+
+    if (popups['history'] is None or not popups['history'].winfo_exists()): 
+        popups['history'] = ctk.CTkToplevel()
+
+
+
+        w = 1000
+        h = 550
+        x = (screen_sizes['ws']/2) - (w/2)
+        y = (screen_sizes['hs']/2) - (h/2) + 40
+
+        popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
+        popups['history'].focus()
+        popups['history'].after(201, lambda: popups['history'].iconbitmap("assets\\logo.ico"))
+        popups['history'].title("History")
+        popups['history'].resizable(False, False)
+        popups['history'].after(100, lambda: popups['history'].focus())
+
+        scrollable_frame = ctk.CTkScrollableFrame(popups['history'], width=925, height=475, scrollbar_fg_color='transparent')
+        scrollable_frame.place(x=25, y=25)
+
+    else:
+        popups['history'].focus()
 
 
 ##
-def handle_generate(toPrinter, toPdf, isCodeOfConduct):
+def handle_generate(to_printer, to_pdf, is_code_of_conduct):
     temp_list = []
-    global form, status_string
+    global form
 
     for i in range(len(form['payment_list'])):
         if len(form['payment_list'][i]['amount'].get()) > 0 and len(form['payment_list'][i]['date'].get()) > 0:
@@ -150,19 +156,19 @@ def handle_generate(toPrinter, toPdf, isCodeOfConduct):
     isOpenOutputActive = form['open_output_switch'].get()
     isRetainerActive = form['active_switch'].get()
 
-    response = form_logic.generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct)
+    response = form_logic.generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct)
 
-    if toPrinter == False:
+    if to_printer == False:
         if response == False:
-            status_string.set("Error")
+            form['status'].set("Error")
         else:
-            status_string.set("Agreement created")
+            form['status'].set("Agreement created")
 
 
 ##
 def handle_click_reset():
-    global form, status_string, current_payment_index, current_plus_month_posy, table_ranges
-    status_string.set("form cleared")
+    global form, current_payment_index, current_plus_month_posy, table_ranges
+    form['status'].set("form cleared")
     form = form_logic.reset(form)
     form['include_taxes'].set(True)
     form['open_output'].set(True)
@@ -182,14 +188,14 @@ def handle_click_today():
     (form['payment_list'][0]['date']).insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
 
     if current_payment_index == 1:
-        form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
+        form['plus_month_btn'] = ctk.CTkButton(root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
         form['plus_month_btn'].place(x=568, y=101)
 
 
 ##
-def handle_click_test_print():
-    global form, status_string, printer_selected
-    status_string.set("printing test")
+def handle_click_test_print(to_printer):
+    global form
+    form['status'].set("printing test")
 
     # defining the file path
     file_path = os.getcwd() + '\\assets\\test.docx'
@@ -203,7 +209,7 @@ def handle_click_test_print():
     document.save(file_path)
 
     # print the blank document
-    win32print.SetDefaultPrinter(printer_selected.get())
+    win32print.SetDefaultPrinter(to_printer.get())
     win32api.ShellExecute(0, "print", file_path, None,  ".",  0)
 
     # add a delay so that the print command has time to find the file, then remove the document
@@ -214,8 +220,8 @@ def handle_click_test_print():
 
 ##
 def handle_click_test_data():
-    global form, status_string
-    status_string.set("dummy data placed")
+    global form
+    form['status'].set("dummy data placed")
 
     client_name = names.get_full_name()
     application_fee = (random.randint(1,4) * 1000)
@@ -277,7 +283,7 @@ def replace_plus_month_button(place_button = True):
     global form, current_plus_month_posy
 
     form['plus_month_btn'].destroy()
-    form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
+    form['plus_month_btn'] = ctk.CTkButton(root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
     
     if place_button:
         form['plus_month_btn'].place(x=568, y=current_plus_month_posy)
@@ -417,19 +423,19 @@ def render_form():
 
 ##
 def init_form():
-    global root, printer_list, form, icon
+    global root, form, icon
 
     printer_list = [printer[2] for printer in win32print.EnumPrinters(2) if 'PDF' not in printer[2]]
 
     # calculate x and y coordinates for the Tk root window
     w = 800
     h = 540
-    x = (ws/2) - (w/2)
-    y = (hs/2) - (h/2)
+    x = (screen_sizes['ws']/2) - (w/2)
+    y = (screen_sizes['hs']/2) - (h/2)
 
     root.geometry('%dx%d+%d+%d' % (w, h, x, y))
     root.iconbitmap(resource_path("assets\\logo.ico"))
-    root.title("AMCAIM RetAG " + version)
+    root.title("AMCAIM RetAG (" + form['version'] + ")")
 
     form['autofill_amount'] = StringVar()
     form['autofill_amount'].trace_add('write', autofill_first_amount)
@@ -439,8 +445,7 @@ def init_form():
     form['open_output'] = BooleanVar(value=True)
     form['is_active'] = BooleanVar(value=False)
 
-    ## left frame
-    form['frame_info'] = ctk.CTkFrame(master=root, width=300, height=440)
+    form['frame_info'] = ctk.CTkFrame(root, width=300, height=440)
     current_frame = form['frame_info']
 
     form['client_info_label'] = ctk.CTkLabel(root, text="Client Information")
@@ -458,8 +463,7 @@ def init_form():
     form['email_address'] = ctk.CTkEntry(current_frame, width=280, border_width=0, corner_radius=4)
     form['phone_number'] = ctk.CTkEntry(current_frame, width=280, border_width=0, corner_radius=4)
 
-    ## right frame
-    form['frame_payments'] = ctk.CTkFrame(master=root, width=300, height=440)
+    form['frame_payments'] = ctk.CTkFrame(root, width=300, height=440)
     current_frame = form['frame_payments']
 
     form['payment_instructions_label'] = ctk.CTkLabel(root, text="Payment Instructions")
@@ -473,45 +477,37 @@ def init_form():
             'date': ctk.CTkEntry(current_frame, width=150, border_width=0, corner_radius=4)
         })
 
-    ## button images
-    icon['history_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\history.png"))
-    icon['folder_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\folder.png"))
-    icon['clear_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\clear.png"))
-    icon['pdf_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\pdf.png"))
-    icon['docx_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\docx.png"))
-    icon['prnt_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\print.png"))
-    icon['conduct_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\conduct.png"))
-    icon['test_data_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\testData.png"))
-    icon['test_prnt_icon'] = tk.PhotoImage(file=resource_path("assets\\icons\\testPrnt.png"))
+    ## button icons
+    icon_list = ['history', 'folder', 'clear', 'print', 'docx', 'pdf', 'conduct', 'testData', 'testPrnt', 'printConduct', 'printRetainer']
+    for index, icon_name in enumerate(icon_list):
+        icon[icon_name] = tk.PhotoImage(file=resource_path("assets\\icons\\" + icon_list[index] + ".png"))
 
     ## buttons
     button_size = 36
 
-    form['today_btn'] = ctk.CTkButton(master=root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_today, width=60, height=25)
-    form['500_btn'] = ctk.CTkButton(master=root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_500dollars, width=60, height=25)
-    form['1000_btn'] = ctk.CTkButton(master=root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_1000dollars, width=60, height=25)
-    form['advance_btn'] = ctk.CTkButton(master=root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
-    form['plus_month_btn'] = ctk.CTkButton(master=root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
-
-    form['test_data_btn'] = ctk.CTkButton(master=root, text="", image=icon['test_data_icon'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120, height=button_size)
-
-    form['history_btn'] = ctk.CTkButton(master=root, text="", image=icon['history_icon'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=button_size, height=button_size)
-    form['output_btn'] = ctk.CTkButton(master=root, text="", image=icon['folder_icon'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=button_size, height=button_size)
-    form['clear_btn'] = ctk.CTkButton(master=root, text="", image=icon['clear_icon'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=button_size, height=button_size)
-    form['print_btn'] = ctk.CTkButton(master=root, text="", image=icon['prnt_icon'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=handle_click_print, width=button_size, height=button_size)
-    form['docx_btn'] = ctk.CTkButton(master=root, text="", image=icon['docx_icon'], border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=button_size, height=button_size)
-    form['pdf_btn'] = ctk.CTkButton(master=root, text="", image=icon['pdf_icon'], border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=button_size, height=button_size)
-    form['conduct_btn'] = ctk.CTkButton(master=root, text="", image=icon['conduct_icon'], border_width=0, corner_radius=4, fg_color="#1A8405", command=handle_click_conduct, width=120, height=button_size)
+    form['today_btn'] = ctk.CTkButton(root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_today, width=60, height=25)
+    form['500_btn'] = ctk.CTkButton(root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_500dollars, width=60, height=25)
+    form['1000_btn'] = ctk.CTkButton(root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=handle_click_1000dollars, width=60, height=25)
+    form['advance_btn'] = ctk.CTkButton(root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_advance, width=60, height=25)
+    form['plus_month_btn'] = ctk.CTkButton(root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=handle_click_plus_month, width=60, height=25)
+    form['test_data_btn'] = ctk.CTkButton(root, text="", image=icon['testData'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=handle_click_test_data, width=120, height=button_size)
+    form['history_btn'] = ctk.CTkButton(root, text="", image=icon['history'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_history, width=button_size, height=button_size)
+    form['output_btn'] = ctk.CTkButton(root, text="", image=icon['folder'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_output_folder, width=button_size, height=button_size)
+    form['clear_btn'] = ctk.CTkButton(root, text="", image=icon['clear'], border_width=0, corner_radius=4, fg_color='#313131', command=handle_click_reset, width=button_size, height=button_size)
+    form['print_btn'] = ctk.CTkButton(root, text="", image=icon['print'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=lambda:handle_click_print(printer_list, False, False), width=button_size, height=button_size)
+    form['docx_btn'] = ctk.CTkButton(root, text="", image=icon['docx'], border_width=0, corner_radius=4, fg_color="#383FBC", command=handle_click_docx, width=button_size, height=button_size)
+    form['pdf_btn'] = ctk.CTkButton(root, text="", image=icon['pdf'], border_width=0, corner_radius=4, fg_color="#b02525", command=handle_click_pdf, width=button_size, height=button_size)
+    form['conduct_btn'] = ctk.CTkButton(root, text="", image=icon['conduct'], border_width=0, corner_radius=4, fg_color="#1A8405", command=lambda:handle_click_print(printer_list, False, True), width=120, height=button_size)
 
     ## switches
-    form['tax_switch'] = ctk.CTkSwitch(master=root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
-    form['open_output_switch'] = ctk.CTkSwitch(master=root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
-    form['active_switch'] = ctk.CTkSwitch(master=root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['is_active'])
+    form['tax_switch'] = ctk.CTkSwitch(root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['include_taxes'])
+    form['open_output_switch'] = ctk.CTkSwitch(root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['open_output'])
+    form['active_switch'] = ctk.CTkSwitch(root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=form['is_active'])
 
-    form['frame_status'] = ctk.CTkFrame(master=root, width=620, height=30)
+    form['frame_status'] = ctk.CTkFrame(root, width=620, height=30)
     current_frame = form['frame_status']
 
-    form['status_label'] = ctk.CTkLabel(current_frame, textvariable=status_string)
+    form['status_label'] = ctk.CTkLabel(current_frame, textvariable=form['status'])
 
     render_form()
 
