@@ -1,4 +1,5 @@
 import editor, re, os, csv
+import variables as vars
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -73,3 +74,30 @@ def reset(form_elements):
         form_elements['payment_list'][i]['date'].insert("end", "")
 
     return form_elements
+
+
+##
+def autofill_first_amount(var, index, mode):
+    amount_input = vars.form['autofill_amount'].get()
+    (vars.form['payment_list'][0]['amount']).delete(0, 'end')
+    (vars.form['payment_list'][0]['amount']).insert(0, amount_input)
+
+
+##
+def autofill_first_date(var, index, mode):
+    doc_date = vars.form['document_date'].get()
+
+    for i in range(len(doc_date)):
+        if (doc_date[i].isdigit() or doc_date[i] == '/'):
+            (vars.form['payment_list'][0]['date']).delete(0, 'end')
+            (vars.form['payment_list'][0]['date']).insert(0, doc_date)
+        else:
+            vars.form['document_date'].delete(0, 'end')
+            vars.form['document_date'].insert(0, doc_date[0:-1])
+            (vars.form['payment_list'][0]['date']).delete(0, 'end')
+            (vars.form['payment_list'][0]['date']).insert(0, doc_date[0:-1])
+
+    if (len(doc_date) == 0):
+        (vars.form['payment_list'][0]['date']).delete(0, 'end')
+
+
