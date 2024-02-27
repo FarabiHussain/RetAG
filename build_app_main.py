@@ -1,4 +1,5 @@
-import os, msvcrt, fileinput, sys, re
+import os
+import msvcrt
 from build_app_utils import *
 
 cwd = os.getcwd()
