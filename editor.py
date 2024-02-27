@@ -1,8 +1,13 @@
+import os
+import datetime
+import sys
+import win32api
+import win32print
+import logic_history as history
 from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
 from docx2pdf import convert
-import datetime, os, sys, win32api, win32print, logic_hostory as history
 
 
 ## initializes the fill info, output and input files

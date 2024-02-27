@@ -1,4 +1,4 @@
-import os, msvcrt
+import os, msvcrt, fileinput, sys, re
 from build_app_utils import *
 
 cwd = os.getcwd()
@@ -30,8 +30,10 @@ while True:
     for i in range(len(ver)):
         ver[i] = unformat(ver[i])
 
-    try: kb = kb.decode(encoding='utf-8')
-    except: pass
+    try: 
+        kb = kb.decode(encoding='utf-8')
+    except: 
+        pass
 
     if kb == "a":
         cur = (cur - 1) % 3
@@ -44,6 +46,7 @@ while True:
     elif kb == "e":
         for i in range(len(ver)):
             ver[i] = unformat(ver[i])
+        set_version(ver)
         build_exe(cwd, ver)
         break
     elif kb == "q":

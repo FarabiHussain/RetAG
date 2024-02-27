@@ -1,4 +1,4 @@
-import win32print, win32print
+import win32print
 import variables as vars
 import customtkinter as ctk
 import logic_click as click
