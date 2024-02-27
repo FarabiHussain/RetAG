@@ -1,10 +1,13 @@
+import win32print, win32print
+import variables as vars
+import customtkinter as ctk
+import click_logic as click
+import form_logic as logic
 import variables as vars
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
 from CTkTable import *
 from CTkTableRowSelector import *
-import win32print, win32print
-import customtkinter as ctk, click_logic as click, form_logic as logic, variables as vars, os
 
 
 ## initialize the form components
@@ -26,8 +29,8 @@ def init_form():
     # string, boolean variables and tracers
     vars.form['autofill_amount'] = StringVar()
     vars.form['autofill_date'] = StringVar()
-    vars.form['autofill_amount'].trace_add('write', logic.autofill_first_amount)
-    vars.form['autofill_date'].trace_add('write', logic.autofill_first_date)
+    vars.form['autofill_amount'].trace_add('write', logic.autofill_amount)
+    vars.form['autofill_date'].trace_add('write', logic.autofill_date)
     vars.form['include_taxes'] = BooleanVar(value=True)
     vars.form['open_output'] = BooleanVar(value=True)
     vars.form['is_active'] = BooleanVar(value=False)
@@ -86,8 +89,6 @@ def init_form():
     vars.form['tax_switch'] = ctk.CTkSwitch(vars.root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['include_taxes'])
     vars.form['open_output_switch'] = ctk.CTkSwitch(vars.root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['open_output'])
     vars.form['active_switch'] = ctk.CTkSwitch(vars.root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['is_active'])
-
-    vars.root.mainloop()
 
 
 ## render the form components
@@ -154,8 +155,9 @@ def render_form():
     vars.form['frame_status'].place(x=20, y=490)
     vars.form['status_label'].place(x=10, y=1)
 
+    vars.root.mainloop()
+
 
 vars.init()
 init_form()
-os.system('cls')
 render_form()
