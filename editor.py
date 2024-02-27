@@ -2,7 +2,43 @@ from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 from path_manager import resource_path
 from docx2pdf import convert
-import datetime, os, sys, win32api, win32print, csv, history_logic as history
+import datetime, os, sys, win32api, win32print, logic_hostory as history
+
+
+## initializes the fill info, output and input files
+def init(form, isTaxIncluded, is_code_of_conduct):
+    date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
+
+    # data needed in both retainers and conducts
+    input_data = {
+        '[DAY]': date_on_document.strftime("%d"),
+        '[MONTH]': date_on_document.strftime("%m"),
+        '[YEAR]': date_on_document.strftime("%Y"),
+        '[CLIENT]': form["client_name"],
+        '[APP_TYPE]': form["application_type"],
+    }
+
+    input_file = resource_path("assets\\conduct.docx")
+    output_file = "Code of Conduct - " + (form["client_name"]) + ".docx"
+
+    # include the following if the document is a retainer agreement
+    if not is_code_of_conduct:
+        input_data['[DAY]'] = format_day(date_on_document.strftime("%d"))
+        input_data['[MONTH]'] = date_on_document.strftime("%B")
+        input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], isTaxIncluded)
+        input_data['[APP_FEE]'] = format_cents(form["application_fee"])
+        input_data['[TAXED]'] = add_taxes(form["application_fee"])
+        input_data['[EMAIL]'] = form["email_address"]
+        input_data['[PHONE]'] = format_phone(form["phone_number"])
+
+        input_file = resource_path("assets\\retainer.docx")
+        output_file = "Retainer Agreement - " + (form["client_name"]) + ".docx"
+
+    return {
+        'input_data': input_data, 
+        'input_file': input_file, 
+        'output_file': output_file
+    }
 
 
 ## generate the docx with the input info
@@ -48,42 +84,6 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
         print('Exception: ' + str(e))
         popup(title="Failed", message=e, corner_radius=4)
         return False
-
-
-## initializes the fill info, output and input files
-def init(form, isTaxIncluded, is_code_of_conduct):
-    date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
-
-    # data needed in both retainers and conducts
-    input_data = {
-        '[DAY]': date_on_document.strftime("%d"),
-        '[MONTH]': date_on_document.strftime("%m"),
-        '[YEAR]': date_on_document.strftime("%Y"),
-        '[CLIENT]': form["client_name"],
-        '[APP_TYPE]': form["application_type"],
-    }
-
-    input_file = resource_path("assets\\conduct.docx")
-    output_file = "Code of Conduct - " + (form["client_name"]) + ".docx"
-
-    # include the following if the document is a retainer agreement
-    if not is_code_of_conduct:
-        input_data['[DAY]'] = format_day(date_on_document.strftime("%d"))
-        input_data['[MONTH]'] = date_on_document.strftime("%B")
-        input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], isTaxIncluded)
-        input_data['[APP_FEE]'] = format_cents(form["application_fee"])
-        input_data['[TAXED]'] = add_taxes(form["application_fee"])
-        input_data['[EMAIL]'] = form["email_address"]
-        input_data['[PHONE]'] = format_phone(form["phone_number"])
-
-        input_file = resource_path("assets\\retainer.docx")
-        output_file = "Retainer Agreement - " + (form["client_name"]) + ".docx"
-
-    return {
-        'input_data': input_data, 
-        'input_file': input_file, 
-        'output_file': output_file
-    }
 
 
 ## formats the list of data so that it can be displayed on the output document

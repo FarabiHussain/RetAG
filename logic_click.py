@@ -4,7 +4,7 @@ import datetime as dt
 import variables as vars
 import names
 import random
-import form_logic
+import logic_form
 import win32print, win32api
 import time
 from tkinter import StringVar
@@ -49,7 +49,7 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
     isOpenOutputActive = vars.form["open_output_switch"].get()
     isRetainerActive = vars.form["active_switch"].get()
 
-    response = form_logic.generate(
+    response = logic_form.generate(
         fill_info,
         isTaxIncluded,
         isOpenOutputActive,
@@ -203,7 +203,7 @@ def test_data():
 ## BUTTON: reset the form and variables
 def reset():
     vars.form["status"].set("form cleared")
-    vars.form = form_logic.reset(vars.form)
+    vars.form = logic_form.reset(vars.form)
     vars.form["include_taxes"].set(True)
     vars.form["open_output"].set(True)
     vars.current_payment = 1

@@ -1,8 +1,8 @@
 import win32print, win32print
 import variables as vars
 import customtkinter as ctk
-import click_logic as click
-import form_logic as logic
+import logic_click as click
+import logic_form as logic
 import variables as vars
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
