@@ -105,7 +105,7 @@ def build_exe(cwd, ver):
 
 ## replace the app version in `variables.py` with the selected version 
 def set_version(ver):
-    version_regex = "v[0-9]+.[0-9]+.[0-9]+"
+    version_regex = "[0-9]+.[0-9]+.[0-9]+"
 
     # iterate through the file, attempt to find version_regex
     for line in fileinput.input('variables.py', inplace=1):
