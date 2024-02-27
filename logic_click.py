@@ -172,16 +172,10 @@ def test_data():
 
     vars.form["document_date"].insert(0, "1/3/2024")
     vars.form["client_name"].insert(0, client_name)
-    vars.form["application_type"].insert(
-        0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"])
-    )
+    vars.form["application_type"].insert(0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"]))
     vars.form["application_fee"].insert(0, application_fee)
-    vars.form["email_address"].insert(
-        0, client_name.replace(" ", "").lower() + "@email.com"
-    )
-    vars.form["phone_number"].insert(
-        0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999))
-    )
+    vars.form["email_address"].insert(0, client_name.replace(" ", "").lower() + "@email.com")
+    vars.form["phone_number"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
 
     installments = random.randint(1, 12)
     per_installment = float(application_fee / installments)
@@ -195,9 +189,7 @@ def test_data():
         y = str(int((4 + i) / 12) + 2024)
 
         vars.form["payment_list"][i]["date"].insert(0, ("1/" + m + "/" + y))
-        vars.form["payment_list"][i]["amount"].insert(
-            0, "{:.2f}".format((per_installment))
-        )
+        vars.form["payment_list"][i]["amount"].insert(0, "{:.2f}".format((per_installment)))
 
 
 ## BUTTON: reset the form and variables
