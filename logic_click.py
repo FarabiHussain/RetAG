@@ -7,6 +7,7 @@ import random
 import logic_form
 import win32print, win32api
 import time
+import logic_history as history
 from tkinter import StringVar
 from dateutil import relativedelta as rd
 from docx import Document
@@ -328,7 +329,7 @@ def print_test(to_printer):
 
 
 ## BUTTON: display the popup containing the history
-def history():
+def history_window():
     if (vars.popups['history'] is None or not vars.popups['history'].winfo_exists()): 
         vars.popups['history'] = ctk.CTkToplevel()
 
@@ -346,6 +347,9 @@ def history():
 
         scrollable_frame = ctk.CTkScrollableFrame(vars.popups['history'], width=925, height=475, scrollbar_fg_color='transparent')
         scrollable_frame.place(x=25, y=25)
+
+        for entry in (history.retrieve()):
+            print(entry['client_name'])
 
     else:
         vars.popups['history'].focus()

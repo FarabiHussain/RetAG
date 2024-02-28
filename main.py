@@ -56,8 +56,8 @@ def init_form():
     vars.form['payment_instructions_label'] = ctk.CTkLabel(vars.root, text="Payment Instructions")
     vars.form['amount_label'] = ctk.CTkLabel(vars.form['frame_payments'], text="Amount")
     vars.form['date_label'] = ctk.CTkLabel(vars.form['frame_payments'], text="Date (DD/MM/YYYY)")
-
     vars.form['payment_list'] = []
+
     for _ in range(12):
         vars.form['payment_list'].append({
             'amount': ctk.CTkEntry(vars.form['frame_payments'], width=90, border_width=0, corner_radius=4),
@@ -69,21 +69,19 @@ def init_form():
     vars.form['status_label'] = ctk.CTkLabel(vars.form['frame_status'], textvariable=vars.form['status'])
 
     ## buttons
-    button_size = 36
-
     vars.form['today_btn'] = ctk.CTkButton(vars.root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.today(), width=60, height=25)
     vars.form['500_btn'] = ctk.CTkButton(vars.root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.dollars(500), width=60, height=25)
     vars.form['1000_btn'] = ctk.CTkButton(vars.root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.dollars(1000), width=60, height=25)
     vars.form['plus_month_btn'] = ctk.CTkButton(vars.root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=lambda:click.add_month(), width=60, height=25)
     vars.form['advance_btn'] = ctk.CTkButton(vars.root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=lambda:click.advance(), width=60, height=25)
-    vars.form['test_data_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['testData'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=lambda:click.test_data(), width=120, height=button_size)
-    vars.form['clear_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['clear'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.reset(), width=button_size, height=button_size)
-    vars.form['output_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['folder'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.output(), width=button_size, height=button_size)
-    vars.form['print_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['print'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=lambda:click.print_file(printer_list, False, False), width=button_size, height=button_size)
-    vars.form['docx_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['docx'], border_width=0, corner_radius=4, fg_color="#383FBC", command=lambda:click.docx(), width=button_size, height=button_size)
-    vars.form['pdf_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['pdf'], border_width=0, corner_radius=4, fg_color="#b02525", command=lambda:click.pdf(), width=button_size, height=button_size)
-    vars.form['conduct_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['conduct'], border_width=0, corner_radius=4, fg_color="#1A8405", command=lambda:click.print_file(printer_list, False, True), width=120, height=button_size)
-    vars.form['history_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['history'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.history(), width=button_size, height=button_size)
+    vars.form['test_data_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['testData'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=lambda:click.test_data(), width=120, height=36)
+    vars.form['clear_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['clear'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.reset(), width=36, height=36)
+    vars.form['output_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['folder'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.output(), width=36, height=36)
+    vars.form['print_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['print'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=lambda:click.print_file(printer_list, False, False), width=36, height=36)
+    vars.form['docx_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['docx'], border_width=0, corner_radius=4, fg_color="#383FBC", command=lambda:click.docx(), width=36, height=36)
+    vars.form['pdf_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['pdf'], border_width=0, corner_radius=4, fg_color="#b02525", command=lambda:click.pdf(), width=36, height=36)
+    vars.form['conduct_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['conduct'], border_width=0, corner_radius=4, fg_color="#1A8405", command=lambda:click.print_file(printer_list, False, True), width=120, height=36)
+    vars.form['history_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['history'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.history_window(), width=36, height=36)
 
     ## switches
     vars.form['tax_switch'] = ctk.CTkSwitch(vars.root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['include_taxes'])

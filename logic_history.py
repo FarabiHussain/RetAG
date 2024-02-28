@@ -53,7 +53,7 @@ def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
         history.write("\n" + history_entry)
 
 
-#
+## read the csv and return as a list
 def retrieve():
     logs_dir = os.getcwd() + "\\logs\\"
 
