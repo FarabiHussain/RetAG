@@ -343,13 +343,16 @@ def history_window():
         vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\logo.ico"))
         vars.popups['history'].title("History")
         vars.popups['history'].resizable(False, False)
-        vars.popups['history'].after(100, lambda: vars.popups['history'].focus())
 
         scrollable_frame = ctk.CTkScrollableFrame(vars.popups['history'], width=925, height=475, scrollbar_fg_color='transparent')
         scrollable_frame.place(x=25, y=25)
 
+        os.system('cls')
         for entry in (history.retrieve()):
+            ctk.CTkLabel(scrollable_frame, text=entry['client_name']).place(x=30,y=30)
             print(entry['client_name'])
+
+        vars.popups['history'].after(100, lambda: vars.popups['history'].focus())
 
     else:
         vars.popups['history'].focus()
