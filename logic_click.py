@@ -11,6 +11,7 @@ import logic_history as history
 from tkinter import StringVar
 from dateutil import relativedelta as rd
 from docx import Document
+from CTkXYFrame import *
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -333,26 +334,57 @@ def history_window():
     if (vars.popups['history'] is None or not vars.popups['history'].winfo_exists()): 
         vars.popups['history'] = ctk.CTkToplevel()
 
-        w = 1000
-        h = 550
+        w = 1200
+        h = 800
         x = (vars.screen_sizes['ws']/2) - (w/2)
         y = (vars.screen_sizes['hs']/2) - (h/2) + 40
 
+        xy_frame = CTkXYFrame(vars.popups['history'], width=w-100, height=h-50)
+        xy_frame.place(x=25, y=40)
+
+        # ctk.CTkLabel(vars.popups['history'], text='created_by').place(x=xpos, y=10)
+        # ctk.CTkLabel(vars.popups['history'], text='created_date').place(x=xpos, y=10)
+        # ctk.CTkLabel(vars.popups['history'], text='client_name').place(x=xpos, y=10)
+        # ctk.CTkLabel(vars.popups['history'], text='application_type').place(x=240, y=10)
+        # ctk.CTkLabel(vars.popups['history'], text='application_fee').place(x=320, y=10)
+        # ctk.CTkLabel(vars.popups['history'], text='is_active').place(x=380, y=10)
+
+        # render rows for each hisotry entry
+        history_entries = history.retrieve()
+        column_x_padding = ((w-100)/8)*0.2
+
+        for i, entry in enumerate(history_entries):
+
+            if (i == 0):
+                ctk.CTkLabel(xy_frame, text='created_by').grid(row=i, column=0, padx=23, pady=5)
+                ctk.CTkLabel(xy_frame, text='created_date').grid(row=i, column=1, padx=23, pady=5)
+                ctk.CTkLabel(xy_frame, text='client_name').grid(row=i, column=2, padx=23, pady=5)
+                ctk.CTkLabel(xy_frame, text='application_type').grid(row=i, column=3, padx=23, pady=5)
+                ctk.CTkLabel(xy_frame, text='application_fee').grid(row=i, column=4, padx=23, pady=5)
+                ctk.CTkLabel(xy_frame, text='is_active').grid(row=i, column=5, padx=23, pady=5)
+
+            # only render columns if the line in the csv is not blank
+            if (entry['created_by'] != '' and entry['created_date'] != ''):
+                for j, info in enumerate(['created_by', 'created_date', 'client_name', 'application_type', 'application_fee', 'is_active']):
+                    ctk.CTkLabel(xy_frame, text=entry[info]).grid(row=i, column=j, padx=column_x_padding, pady=5)
+
+                # add the import button
+                ctk.CTkButton(xy_frame, text='import', width=40, corner_radius=4, command=import_entry).grid(row=i, column=j+1, padx=column_x_padding, pady=5)
+
+                # add the active toggle
+                b_label = ('active' if entry['is_active'].lower() == 'false' else 'inactive')
+                b_color = ('#1A8405' if entry['is_active'].lower() == 'false' else '#313131')
+                ctk.CTkButton(xy_frame, text=('set ' + b_label), fg_color=b_color, width=40, corner_radius=4).grid(row=i, column=j+2, padx=column_x_padding, pady=5)
+
         vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
-        vars.popups['history'].focus()
-        vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\logo.ico"))
-        vars.popups['history'].title("History")
         vars.popups['history'].resizable(False, False)
-
-        scrollable_frame = ctk.CTkScrollableFrame(vars.popups['history'], width=925, height=475, scrollbar_fg_color='transparent')
-        scrollable_frame.place(x=25, y=25)
-
-        os.system('cls')
-        for entry in (history.retrieve()):
-            ctk.CTkLabel(scrollable_frame, text=entry['client_name']).place(x=30,y=30)
-            print(entry['client_name'])
-
-        vars.popups['history'].after(100, lambda: vars.popups['history'].focus())
+        vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\logo.ico"))
+        vars.popups['history'].title("Retainer History")
+        vars.popups['history'].after(1, lambda: vars.popups['history'].focus())
 
     else:
         vars.popups['history'].focus()
+
+
+def import_entry():
+    pass
