@@ -8,6 +8,8 @@ import logic_form
 import win32print, win32api
 import time
 import logic_history as history
+import json
+import pandas as pd
 from tkinter import StringVar
 from dateutil import relativedelta as rd
 from docx import Document
@@ -331,47 +333,32 @@ def print_test(to_printer):
 
 ## BUTTON: display the popup containing the history
 def history_window():
+
+    # make sure that the popup does not already exist to avoid duplicates
     if (vars.popups['history'] is None or not vars.popups['history'].winfo_exists()): 
+
         vars.popups['history'] = ctk.CTkToplevel()
 
         w = 1200
         h = 800
         x = (vars.screen_sizes['ws']/2) - (w/2)
-        y = (vars.screen_sizes['hs']/2) - (h/2) + 40
-        column_x_padding = ((w-(w*0.05))/7)*0.2
+        y = (vars.screen_sizes['hs']/2) - (h/2)
 
+        header_frame = ctk.CTkFrame(vars.popups['history'], width=1123, height=35, fg_color='transparent')
+        header_frame.place(x=40, y=755)
 
-        scr_frame = ctk.CTkScrollableFrame(vars.popups['history'], width=w-(w*0.05), height=h-(h*0.1))
-        scr_frame.place(x=20, y=60)
+        vars.popups['elem']['history_entries'] = history.retrieve()
+        vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
+        vars.popups['elem']['scr_frame'].place(x=40, y=10)
+        render_table(vars.popups['elem']['history_entries'])
 
-        header_frame = ctk.CTkFrame(vars.popups['history'], width=w-(w*0.05), height=35, fg_color='#1F1E1E')
-        header_frame.place(x=20, y=20)
+        # the buttons at the bottom of the popup for operations
+        vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='import client', width=200, corner_radius=4, fg_color="#1F1E1E")
+        vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
+        vars.popups['elem']['import_button'].place(x=400, y=2)
+        vars.popups['elem']['status_button'].place(x=605, y=2)
 
-        ctk.CTkLabel(header_frame, text='created_by').grid(row=0, column=0, padx=column_x_padding, pady=5)
-        ctk.CTkLabel(header_frame, text='created_date').grid(row=0, column=1, padx=column_x_padding, pady=5)
-        ctk.CTkLabel(header_frame, text='client_name').grid(row=0, column=2, padx=column_x_padding, pady=5)
-        ctk.CTkLabel(header_frame, text='application_type').grid(row=0, column=3, padx=column_x_padding, pady=5)
-        ctk.CTkLabel(header_frame, text='application_fee').grid(row=0, column=4, padx=column_x_padding, pady=5)
-        ctk.CTkLabel(header_frame, text='is_active').grid(row=0, column=5, padx=column_x_padding, pady=5)
-
-        # render rows for each hisotry entry
-        history_entries = history.retrieve()
-
-        for i, entry in enumerate(history_entries):
-
-            # only render columns if the line in the csv is not blank
-            if (entry['created_by'] != '' and entry['created_date'] != ''):
-                for j, info in enumerate(['created_by', 'created_date', 'client_name', 'application_type', 'application_fee', 'is_active']):
-                    ctk.CTkLabel(scr_frame, text=entry[info]).grid(row=i, column=j, padx=column_x_padding, pady=5)
-
-                # add the import button
-                ctk.CTkButton(scr_frame, text='import', width=40, corner_radius=4, command=import_entry).grid(row=i, column=j+1, padx=column_x_padding, pady=5)
-
-                # add the active toggle
-                b_label = ('active' if entry['is_active'].lower() == 'false' else 'inactive')
-                b_color = ('#1A8405' if entry['is_active'].lower() == 'false' else '#313131')
-                ctk.CTkButton(scr_frame, text=('set ' + b_label), fg_color=b_color, width=40, corner_radius=4).grid(row=i, column=j+2, padx=column_x_padding, pady=5)
-
+        ## render the popup
         vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
         vars.popups['history'].resizable(False, False)
         vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\logo.ico"))
@@ -382,5 +369,136 @@ def history_window():
         vars.popups['history'].focus()
 
 
-def import_entry():
-    pass
+## render the table using the list of dicts passed
+def render_table(history_entries):
+    radio_var = StringVar(value="")
+
+    for i, entry in enumerate(history_entries):
+
+        # only render columns if the line in the csv is not blank
+        if (entry['created_by'] != '' and entry['created_date'] != ''):
+
+            # add the radio button
+            ctk.CTkRadioButton(
+                vars.popups['elem']['scr_frame'], width=1100/6, text=entry['client_name'], radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
+            ).grid(row=i, column=0, pady=5)
+
+            # columns with data
+            for j, info in enumerate(['created_by', 'created_date', 'application_type', 'application_fee', 'is_active']):
+
+                # add some formatting where needed
+                label_text = entry[info]
+                active_color = 'white'
+
+                if (info == 'is_active'):
+                    label_text = 'inactive' if entry[info].lower() == 'false' else 'active'
+                    active_color = '#b02525' if entry[info].lower() == 'false' else '#1A8405'
+                elif (info == 'application_fee'):
+                    label_text = '$' + entry[info]
+
+                ctk.CTkLabel(
+                    vars.popups['elem']['scr_frame'], text=label_text, text_color=active_color, width=1100/6, fg_color=('transparent' if i%2==0 else '#292929')
+                ).grid(row=i, column=(j+1), padx=0, pady=5)
+
+
+# found it at https://stackoverflow.com/a/63862387/1497139
+def singleQuoteToDoubleQuote(singleQuoted):
+    cList=list(singleQuoted)
+    inDouble=False
+    inSingle=False
+
+    for i,c in enumerate(cList):
+        if c=="'":
+            if not inDouble:
+                inSingle=not inSingle
+                cList[i]='"'
+        elif c=='"':
+            inDouble=not inDouble
+
+    doubleQuoted="".join(cList)
+
+    return doubleQuoted
+
+
+## update the gui when a client is selected
+def select(str_var):
+    str_var = str_var.get()
+    entry = json.loads(singleQuoteToDoubleQuote(str_var))
+
+    # set the button states and colors based on the selected entry
+    vars.popups['elem']['import_button'].configure(text="import " + entry['client_name'], fg_color='#383FBC', command=lambda:import_entry(entry))
+
+    if (entry['is_active'].lower() == 'true'):
+        vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
+    else:
+        vars.popups['elem']['status_button'].configure(state='normal', text='set active', fg_color="#1A8405", command=lambda:toggle_status(entry))
+
+
+## import the entry into the form
+def import_entry(entry):
+    vars.form['document_date'].delete(0, 'end')
+    vars.form['client_name'].delete(0, 'end')
+    vars.form['application_type'].delete(0, 'end')
+    vars.form['application_fee'].delete(0, 'end')
+    vars.form['email_address'].delete(0, 'end')
+    vars.form['phone_number'].delete(0, 'end')
+    vars.form['include_taxes'].set(True)
+    vars.form['is_active'].set(False)
+
+    vars.form['document_date'].insert(0, entry['date_on_document'])
+    vars.form['client_name'].insert(0, entry['client_name'])
+    vars.form['application_type'].insert(0, entry['application_type'])
+    vars.form['application_fee'].insert(0, entry['application_fee'])
+    vars.form['email_address'].insert(0, entry['email'])
+    vars.form['phone_number'].insert(0, entry['phone'])
+
+    # set the payments
+    for i in range(12):
+        vars.form['payment_list'][i]['date'].delete(0, 'end')
+        vars.form['payment_list'][i]['amount'].delete(0, 'end')
+
+        vars.form['payment_list'][i]['date'].insert(0, entry['date_' + str(i + 1)])
+        vars.form['payment_list'][i]['amount'].insert(0, entry['amount_' + str(i + 1)])
+
+    # set the taxes switch
+    if (entry['add_taxes'].lower() == 'true'):
+        vars.form['include_taxes'].set(True)
+    else:
+        vars.form['include_taxes'].set(False)
+
+    # set the active switch
+    if (entry['is_active'].lower() == 'true'):
+        vars.form['is_active'].set(True)
+    else:
+        vars.form['is_active'].set(False)
+
+    # close the popup once done
+    vars.popups['history'].destroy()
+
+
+## switch the is_active status for the entry
+def toggle_status(entry):
+    history_entries = vars.popups['elem']['history_entries']
+    file_location = os.getcwd() + "\\logs\\history.csv"
+
+    # iterate through the entries to find the row that needs to be overwritten
+    for index, current in enumerate(history_entries):
+        if (entry['created_by'] == current['created_by'] and entry['created_date'] == current['created_date'] and entry['client_name'] == current['client_name']):
+
+            # once found, write to file and exit the loop
+            df = pd.read_csv(file_location)
+            df.loc[(index), 'is_active'] = (True if entry['is_active'].lower() == 'false' else False)
+            df.to_csv(file_location, index=False) 
+            break
+
+    vars.popups['elem']['history_entries'] = history.retrieve()
+
+    # reload the table to display the new change
+    vars.popups['elem']['scr_frame'].destroy()
+    vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
+    vars.popups['elem']['scr_frame'].place(x=40, y=10)
+    render_table(vars.popups['elem']['history_entries'])
+
+
+
+
