@@ -13,18 +13,25 @@ from docx2pdf import convert
 ## initializes the fill info, output and input files
 def init(form, isTaxIncluded, is_code_of_conduct):
     date_on_document = datetime.datetime.strptime(form['document_date'], '%d/%m/%Y')
+    retainer_filename = 'retainer_one.docx'
 
     # data needed in both retainers and conducts
     input_data = {
         '[DAY]': date_on_document.strftime("%d"),
         '[MONTH]': date_on_document.strftime("%m"),
         '[YEAR]': date_on_document.strftime("%Y"),
-        '[CLIENT]': form["client_name"],
+        '[CLIENT1]': form["client_name_1"],
         '[APP_TYPE]': form["application_type"],
     }
 
+    # include client 2 if the name is filled
+    if len(form["client_name_2"]) > 0:
+        input_data['[CLIENT2]'] = form["client_name_2"]
+        retainer_filename = 'retainer_two.docx'
+
+    # set the input and output files as Code of Conduct by default
     input_file = resource_path("assets\\conduct.docx")
-    output_file = "Code of Conduct - " + (form["client_name"]) + ".docx"
+    output_file = "Code of Conduct - " + (form["client_name_1"]) + ".docx"
 
     # include the following if the document is a retainer agreement
     if not is_code_of_conduct:
@@ -33,11 +40,23 @@ def init(form, isTaxIncluded, is_code_of_conduct):
         input_data['[PAY_PLAN]'] = format_payments(form['payment_list'], isTaxIncluded)
         input_data['[APP_FEE]'] = format_cents(form["application_fee"])
         input_data['[TAXED]'] = add_taxes(form["application_fee"])
-        input_data['[EMAIL]'] = form["email_address"]
-        input_data['[PHONE]'] = format_phone(form["phone_number"])
+        input_data['[EMAIL1]'] = form["email_address_1"]
+        input_data['[PHONE1]'] = format_phone(form["phone_number_1"])
 
-        input_file = resource_path("assets\\retainer.docx")
-        output_file = "Retainer Agreement - " + (form["client_name"]) + ".docx"
+        # include second client's email and phone if it is filled
+        if len(form["email_address_2"]) > 0:
+            input_data['[EMAIL2]'] = form["email_address_2"]
+        elif (len(form["client_name_2"]) > 0):
+            input_data['[EMAIL2]'] = form["email_address_1"]
+
+        if len(form["phone_number_2"]) > 0:
+            input_data['[PHONE2]'] = format_phone(form["phone_number_2"])
+        elif (len(form["client_name_2"]) > 0):
+            input_data['[PHONE2]'] = format_phone(form["phone_number_1"])
+
+        # redefine the input file and output filename for Retainer
+        input_file = resource_path("assets\\" + retainer_filename)
+        output_file = "Retainer Agreement - " + (form["client_name_1"]) + ".docx"
 
     return {
         'input_data': input_data, 
@@ -48,16 +67,41 @@ def init(form, isTaxIncluded, is_code_of_conduct):
 
 ## generate the docx with the input info
 def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
+
+    init_data = None
+    doc = None
+
+    # initiate the data and document
     try:
         init_data = init(form, isTaxIncluded, is_code_of_conduct)
         doc = Document(init_data['input_file'])
+    except Exception as e:
+        print('Exception in init(): ' + str(e))
+        popup(title="Failed", message='Exception in init(): ' + str(e), corner_radius=4)
+        return False
 
+    # edit the document 
+    try:
         for paragraph in doc.paragraphs:
             for key, value in init_data['input_data'].items():
                 if key in paragraph.text:
                     for run in paragraph.runs:
                         run.text = run.text.replace(key, value)
+    except Exception as e:
+        print('Exception while editing document: ' + str(e))
+        popup(title="Failed", message='Exception while editing document: ' + str(e), corner_radius=4)
+        return False
 
+    # add the new retainer to the history csv
+    try:
+        history.insert(form, isTaxIncluded, isRetainerActive, to_pdf)
+    except Exception as e:
+        print('Exception while writing to history: ' + str(e))
+        popup(title="Failed", message='Exception while writing to history: ' + str(e), corner_radius=4)
+        return False
+
+    # set up folders and save files, print if needed
+    try:
         # set up the output directory
         output_dir = os.getcwd() + "\\output\\"
         if not os.path.exists(output_dir):
@@ -80,14 +124,11 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
         if isOpenOutputActive:
             os.startfile(output_dir + init_data['output_file'])
 
-        history.insert(form, isTaxIncluded, isRetainerActive, to_pdf)
-
         # return the filename
         return init_data['output_file']
-
     except Exception as e:
         print('Exception: ' + str(e))
-        popup(title="Failed", message=e, corner_radius=4)
+        popup(title="Failed", message='Exception: ' + str(e), corner_radius=4)
         return False
 
 

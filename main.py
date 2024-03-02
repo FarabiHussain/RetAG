@@ -36,20 +36,29 @@ def init_form():
     vars.form['is_active'] = BooleanVar(value=False)
 
     # frame containing the client information
-    vars.form['frame_info'] = ctk.CTkFrame(vars.root, width=300, height=440)
-    vars.form['client_info_label'] = ctk.CTkLabel(vars.root, text="Client Information")
-    vars.form['document_date_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Date on document (DD/MM/YYYY)")
-    vars.form['client_name_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Client name")
-    vars.form['application_type_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Application type")
-    vars.form['application_fee_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Application fee")
-    vars.form['email_address_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Email address")
-    vars.form['phone_number_label'] = ctk.CTkLabel(vars.form['frame_info'], text="Phone number")
-    vars.form['document_date'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4, placeholder_text='DD/MM/YYYY', textvariable=vars.form['autofill_date'])
-    vars.form['client_name'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4)
-    vars.form['application_type'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4)
-    vars.form['application_fee'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4, textvariable=vars.form['autofill_amount'])
-    vars.form['email_address'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4)
-    vars.form['phone_number'] = ctk.CTkEntry(vars.form['frame_info'], width=280, border_width=0, corner_radius=4)
+    vars.form['frame_info'] = ctk.CTkTabview(vars.root, width=300, height=240)
+    vars.form['frame_info'].add("Client 1")
+    vars.form['frame_info'].set("Client 1")
+    vars.form['frame_info'].add("Client 2")
+
+    # labels and fields for both clients
+    for i in range(2):
+        client_no = str(i+1)
+        vars.form['client_name_' + client_no + '_label'] = ctk.CTkLabel(vars.form['frame_info'].tab("Client " + client_no), text="Client " + client_no + " name")
+        vars.form['email_address_' + client_no + '_label'] = ctk.CTkLabel(vars.form['frame_info'].tab("Client " + client_no), text="Email address")
+        vars.form['phone_number_' + client_no + '_label'] = ctk.CTkLabel(vars.form['frame_info'].tab("Client " + client_no), text="Phone number")
+        vars.form['client_name_' + client_no + '_entry'] = ctk.CTkEntry(vars.form['frame_info'].tab("Client " + client_no), width=270, border_width=0, corner_radius=4)
+        vars.form['email_address_' + client_no + '_entry'] = ctk.CTkEntry(vars.form['frame_info'].tab("Client " + client_no), width=270, border_width=0, corner_radius=4)
+        vars.form['phone_number_' + client_no + '_entry'] = ctk.CTkEntry(vars.form['frame_info'].tab("Client " + client_no), width=270, border_width=0, corner_radius=4)
+
+    # common fields and labels
+    vars.form['frame_application'] = ctk.CTkFrame(vars.root, width=300, height=200)
+    vars.form['application_type_label'] = ctk.CTkLabel(vars.form['frame_application'], text="Application type")
+    vars.form['application_fee_label'] = ctk.CTkLabel(vars.form['frame_application'], text="Application fee")
+    vars.form['document_date_label'] = ctk.CTkLabel(vars.form['frame_application'], text="Date on document (DD/MM/YYYY)")
+    vars.form['application_type_entry'] = ctk.CTkEntry(vars.form['frame_application'], width=280, border_width=0, corner_radius=4)
+    vars.form['application_fee_entry'] = ctk.CTkEntry(vars.form['frame_application'], width=280, border_width=0, corner_radius=4, textvariable=vars.form['autofill_amount'])
+    vars.form['document_date_entry'] = ctk.CTkEntry(vars.form['frame_application'], width=280, border_width=0, corner_radius=4, placeholder_text='DD/MM/YYYY', textvariable=vars.form['autofill_date'])
 
     # frame containing the payment plan
     vars.form['frame_payments'] = ctk.CTkFrame(vars.root, width=300, height=440)
@@ -94,17 +103,8 @@ def render_form():
     x_offset = 10
     y_offset = 0
 
-    vars.form['frame_info'].place(x=20, y=40)
-    vars.form['client_info_label'].place(x=120, y=10)
-
-    labels = ['document_date_label', 'client_name_label', 'application_type_label', 'application_fee_label', 'email_address_label', 'phone_number_label']
-    entries = ['document_date', 'client_name', 'application_type', 'application_fee', 'email_address', 'phone_number']
-
-    for i in range(len(labels)):
-        vars.form[labels[i]].place(x=x_offset, y=y_offset + 10)
-        vars.form[entries[i]].place(x=x_offset, y=y_offset + 40)
-        y_offset += 70
-
+    vars.form['frame_info'].place(x=20, y=22)
+    vars.form['frame_application'].place(x=20, y=280)
     vars.form['frame_payments'].place(x=340, y=40)
     vars.form['payment_instructions_label'].place(x=430, y=10)
     vars.form['amount_label'].place(x=40, y=0)
@@ -114,17 +114,35 @@ def render_form():
     for i in range(len(vars.form['payment_list'])):
         curr_payment = vars.form['payment_list'][i]
         curr_payment['serial'] = ctk.CTkLabel(vars.form['frame_payments'], text=(str(i + 1) + "."))
-
         curr_payment['serial'].place(x=x_offset + 5, y=y_offset + 11)
         curr_payment['amount'].place(x=x_offset + 30, y=y_offset + 10)
         curr_payment['date'].place(x=x_offset + 130, y=y_offset + 10)
         y_offset += 34
 
-    vars.form['today_btn'].place(x=250, y=50)
-    vars.form['500_btn'].place(x=180, y=260)
-    vars.form['1000_btn'].place(x=250, y=260)
-    vars.form['advance_btn'].place(x=568, y=67)
+    # render the application info section
+    vars.form['today_btn'].place(x=250, y=288)
+    vars.form['document_date_label'].place(x=10, y=10)
+    vars.form['application_type_label'].place(x=10, y=70)
+    vars.form['application_fee_label'].place(x=10, y=130)
+    vars.form['document_date_entry'].place(x=10, y=35)
+    vars.form['application_type_entry'].place(x=10, y=95)
+    vars.form['application_fee_entry'].place(x=10, y=155)
 
+    # buttons for gui text
+    vars.form['advance_btn'].place(x=568, y=67)
+    vars.form['500_btn'].place(x=180, y=408)
+    vars.form['1000_btn'].place(x=250, y=408)
+
+    # render the client 1 & 2 info section
+    for i in range(2):
+        vars.form['client_name_' + str(i+1) + '_label'].place(x=10, y=0)
+        vars.form['email_address_' + str(i+1) + '_label'].place(x=10, y=60)
+        vars.form['phone_number_' + str(i+1) + '_label'].place(x=10, y=120)
+        vars.form['client_name_' + str(i+1) + '_entry'].place(x=10, y=25)
+        vars.form['email_address_' + str(i+1) + '_entry'].place(x=10, y=85)
+        vars.form['phone_number_' + str(i+1) + '_entry'].place(x=10, y=145)
+
+    # buttons on the rightmost side of the GUI
     y_offset = 40
     vars.form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40

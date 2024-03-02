@@ -13,7 +13,6 @@ import pandas as pd
 from tkinter import StringVar
 from dateutil import relativedelta as rd
 from docx import Document
-from CTkXYFrame import *
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -25,14 +24,14 @@ def send_to_device(selected_printer, to_pdf, is_code_of_conduct):
 
 ## HELPER: generate a dictionary from the form and send it to the doc editor
 def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
-    temp_list = []
+    pay_list = []
 
     for i in range(len(vars.form["payment_list"])):
         if (
             len(vars.form["payment_list"][i]["amount"].get()) > 0
             and len(vars.form["payment_list"][i]["date"].get()) > 0
         ):
-            temp_list.append(
+            pay_list.append(
                 {
                     "amount": vars.form["payment_list"][i]["amount"].get(),
                     "date": vars.form["payment_list"][i]["date"].get(),
@@ -40,13 +39,16 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
             )
 
     fill_info = {
-        "document_date": vars.form["document_date"].get(),
-        "client_name": vars.form["client_name"].get(),
-        "application_type": vars.form["application_type"].get(),
-        "application_fee": vars.form["application_fee"].get(),
-        "email_address": vars.form["email_address"].get(),
-        "phone_number": vars.form["phone_number"].get(),
-        "payment_list": temp_list,
+        "client_name_1": vars.form["client_name_1_entry"].get(),
+        "email_address_1": vars.form["email_address_1_entry"].get(),
+        "phone_number_1": vars.form["phone_number_1_entry"].get(),
+        "client_name_2": vars.form["client_name_2_entry"].get(),
+        "email_address_2": vars.form["email_address_2_entry"].get(),
+        "phone_number_2": vars.form["phone_number_2_entry"].get(),
+        "payment_list": pay_list,
+        "document_date": vars.form["document_date_entry"].get(),
+        "application_type": vars.form["application_type_entry"].get(),
+        "application_fee": vars.form["application_fee_entry"].get(),
     }
 
     isTaxIncluded = vars.form["include_taxes"].get()
@@ -72,14 +74,14 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
 
 ## BUTTON: add the clicked amount as the total value of the case
 def dollars(amount):
-    vars.form["application_fee"].delete(0, "end")
-    vars.form["application_fee"].insert(0, int(amount))
+    vars.form["application_fee_entry"].delete(0, "end")
+    vars.form["application_fee_entry"].insert(0, int(amount))
 
 
 ## BUTTON: sets the `date on document` to be today's date
 def today():
-    vars.form["document_date"].delete(0, "end")
-    vars.form["document_date"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
+    vars.form["document_date_entry"].delete(0, "end")
+    vars.form["document_date_entry"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
     vars.form["payment_list"][0]["date"].delete(0, "end")
     vars.form["payment_list"][0]["date"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
 
@@ -161,25 +163,24 @@ def add_month():
 
 ## BUTTON: populate the form with dummy data
 def test_data():
-
     vars.form["status"].set("dummy data placed")
 
     client_name = names.get_full_name()
     application_fee = random.randint(1, 4) * 1000
 
-    vars.form["document_date"].delete(0, "end")
-    vars.form["client_name"].delete(0, "end")
-    vars.form["application_type"].delete(0, "end")
-    vars.form["application_fee"].delete(0, "end")
-    vars.form["email_address"].delete(0, "end")
-    vars.form["phone_number"].delete(0, "end")
+    vars.form["client_name_1_entry"].delete(0, "end")
+    vars.form["email_address_1_entry"].delete(0, "end")
+    vars.form["phone_number_1_entry"].delete(0, "end")
+    vars.form["document_date_entry"].delete(0, "end")
+    vars.form["application_fee_entry"].delete(0, "end")
+    vars.form["application_type_entry"].delete(0, "end")
 
-    vars.form["document_date"].insert(0, "1/3/2024")
-    vars.form["client_name"].insert(0, client_name)
-    vars.form["application_type"].insert(0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"]))
-    vars.form["application_fee"].insert(0, application_fee)
-    vars.form["email_address"].insert(0, client_name.replace(" ", "").lower() + "@email.com")
-    vars.form["phone_number"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
+    vars.form["client_name_1_entry"].insert(0, client_name)
+    vars.form["email_address_1_entry"].insert(0, client_name.replace(" ", "").lower() + "@email.com")
+    vars.form["phone_number_1_entry"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
+    vars.form["document_date_entry"].insert(0, "1/3/2024")
+    vars.form["application_fee_entry"].insert(0, application_fee)
+    vars.form["application_type_entry"].insert(0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"]))
 
     installments = random.randint(1, 12)
     per_installment = float(application_fee / installments)
@@ -387,7 +388,7 @@ def render_table(history_entries):
             for j, info in enumerate(['created_by', 'created_date', 'application_type', 'application_fee', 'is_active']):
 
                 # add some formatting where needed
-                label_text = entry[info]
+                label_text = entry[info].replace(";", ", ")
                 active_color = 'white'
 
                 if (info == 'is_active'):
@@ -401,7 +402,7 @@ def render_table(history_entries):
                 ).grid(row=i, column=(j+1), padx=0, pady=5)
 
 
-# found it at https://stackoverflow.com/a/63862387/1497139
+## found it at https://stackoverflow.com/a/63862387/1497139
 def singleQuoteToDoubleQuote(singleQuoted):
     cList=list(singleQuoted)
     inDouble=False
@@ -436,28 +437,47 @@ def select(str_var):
 
 ## import the entry into the form
 def import_entry(entry):
-    vars.form['document_date'].delete(0, 'end')
-    vars.form['client_name'].delete(0, 'end')
-    vars.form['application_type'].delete(0, 'end')
-    vars.form['application_fee'].delete(0, 'end')
-    vars.form['email_address'].delete(0, 'end')
-    vars.form['phone_number'].delete(0, 'end')
+
+    client_names = entry['client_name'].split(";")
+    client_emails = entry['email'].split(";")
+    client_phones = entry['phone'].split(";")
+
+    # set the form entries
+    vars.form['document_date_entry'].delete(0, 'end')
+    vars.form['document_date_entry'].insert(0, entry['date_on_document'])
+
+    vars.form['application_type_entry'].delete(0, 'end')
+    vars.form['application_type_entry'].insert(0, entry['application_type'])
+
+    vars.form['application_fee_entry'].delete(0, 'end')
+    vars.form['application_fee_entry'].insert(0, entry['application_fee'])
+
+    vars.form['client_name_1_entry'].delete(0, 'end')
+    vars.form['client_name_1_entry'].insert(0, client_names[0])
+
+    vars.form['email_address_1_entry'].delete(0, 'end')
+    vars.form['email_address_1_entry'].insert(0, client_emails[0])
+
+    vars.form['phone_number_1_entry'].delete(0, 'end')
+    vars.form['phone_number_1_entry'].insert(0, client_phones[0])
+
+    vars.form['client_name_2_entry'].delete(0, 'end')
+    vars.form['client_name_2_entry'].insert(0, '' if len(client_names) == 1 else client_names[1])
+
+    vars.form['email_address_2_entry'].delete(0, 'end')
+    vars.form['email_address_2_entry'].insert(0, '' if len(client_emails) == 1 else client_emails[1])
+
+    vars.form['phone_number_2_entry'].delete(0, 'end')
+    vars.form['phone_number_2_entry'].insert(0, '' if len(client_phones) == 1 else client_phones[1])
+
     vars.form['include_taxes'].set(True)
     vars.form['is_active'].set(False)
-
-    vars.form['document_date'].insert(0, entry['date_on_document'])
-    vars.form['client_name'].insert(0, entry['client_name'])
-    vars.form['application_type'].insert(0, entry['application_type'])
-    vars.form['application_fee'].insert(0, entry['application_fee'])
-    vars.form['email_address'].insert(0, entry['email'])
-    vars.form['phone_number'].insert(0, entry['phone'])
 
     # set the payments
     for i in range(12):
         vars.form['payment_list'][i]['date'].delete(0, 'end')
-        vars.form['payment_list'][i]['amount'].delete(0, 'end')
-
         vars.form['payment_list'][i]['date'].insert(0, entry['date_' + str(i + 1)])
+        vars.form['payment_list'][i]['amount'].delete(0, 'end')
         vars.form['payment_list'][i]['amount'].insert(0, entry['amount_' + str(i + 1)])
 
     # set the taxes switch
@@ -479,13 +499,13 @@ def import_entry(entry):
 ## switch the is_active status for the entry
 def toggle_status(entry):
     history_entries = vars.popups['elem']['history_entries']
-    file_location = os.getcwd() + "\\logs\\history.csv"
+    file_location = os.getcwd() + "\\write\\history.csv"
 
     # iterate through the entries to find the row that needs to be overwritten
     for index, current in enumerate(history_entries):
-        if (entry['created_by'] == current['created_by'] and entry['created_date'] == current['created_date'] and entry['client_name'] == current['client_name']):
 
-            # once found, write to file and exit the loop
+        # once found, write to file and exit the loop
+        if (entry['created_by'] == current['created_by'] and entry['created_date'] == current['created_date'] and entry['client_name'] == current['client_name']):
             df = pd.read_csv(file_location)
             df.loc[(index), 'is_active'] = (True if entry['is_active'].lower() == 'false' else False)
             df.to_csv(file_location, index=False) 
@@ -498,7 +518,4 @@ def toggle_status(entry):
     vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
     vars.popups['elem']['scr_frame'].place(x=40, y=10)
     render_table(vars.popups['elem']['history_entries'])
-
-
-
 
