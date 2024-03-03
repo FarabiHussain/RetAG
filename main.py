@@ -6,8 +6,6 @@ import logic_form as logic
 import variables as vars
 from tkinter import BooleanVar, StringVar
 from path_manager import resource_path
-from CTkTable import *
-from CTkTableRowSelector import *
 
 
 ## initialize the form components
