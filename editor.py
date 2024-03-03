@@ -30,7 +30,7 @@ def init(form, isTaxIncluded, is_code_of_conduct):
         retainer_filename = 'retainer_two.docx'
 
     # set the input and output files as Code of Conduct by default
-    input_file = resource_path("assets\\conduct.docx")
+    input_file = resource_path("assets\\templates\\conduct.docx")
     output_file = "Code of Conduct - " + (form["client_name_1"]) + ".docx"
 
     # include the following if the document is a retainer agreement
@@ -55,7 +55,7 @@ def init(form, isTaxIncluded, is_code_of_conduct):
             input_data['[PHONE2]'] = format_phone(form["phone_number_1"])
 
         # redefine the input file and output filename for Retainer
-        input_file = resource_path("assets\\" + retainer_filename)
+        input_file = resource_path("assets\\templates\\" + retainer_filename)
         output_file = "Retainer Agreement - " + (form["client_name_1"]) + ".docx"
 
     return {
@@ -76,8 +76,7 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
         init_data = init(form, isTaxIncluded, is_code_of_conduct)
         doc = Document(init_data['input_file'])
     except Exception as e:
-        print('Exception in init(): ' + str(e))
-        popup(title="Failed", message='Exception in init(): ' + str(e), corner_radius=4)
+        popup(title="", message='Exception in init(): ' + str(e), corner_radius=4)
         return False
 
     # edit the document 
@@ -88,16 +87,14 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
                     for run in paragraph.runs:
                         run.text = run.text.replace(key, value)
     except Exception as e:
-        print('Exception while editing document: ' + str(e))
-        popup(title="Failed", message='Exception while editing document: ' + str(e), corner_radius=4)
+        popup(title="", message='Exception while editing document: ' + str(e), corner_radius=4)
         return False
 
     # add the new retainer to the history csv
     try:
         history.insert(form, isTaxIncluded, isRetainerActive, to_pdf)
     except Exception as e:
-        print('Exception while writing to history: ' + str(e))
-        popup(title="Failed", message='Exception while writing to history: ' + str(e), corner_radius=4)
+        popup(title="", message='Exception while writing to history: ' + str(e), corner_radius=4)
         return False
 
     # set up folders and save files, print if needed
@@ -128,7 +125,7 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
         return init_data['output_file']
     except Exception as e:
         print('Exception: ' + str(e))
-        popup(title="Failed", message='Exception: ' + str(e), corner_radius=4)
+        popup(title="", message='Exception: ' + str(e), corner_radius=4)
         return False
 
 
@@ -147,7 +144,7 @@ def format_payments(payments, isTaxIncluded):
             current_amount_taxed = float(current_payment['amount'])
 
             if (isTaxIncluded):
-                current_amount_taxed += float(current_payment['amount']) * 0.12
+                current_amount_taxed = add_taxes(current_amount_taxed)
 
             current_payment_date = format_date(current_payment['date'])
             payments_string += "Payment of CAN $" + str(current_amount_taxed) + " to be made within " + current_payment_date + "."
@@ -202,6 +199,4 @@ def format_phone(number):
 ## format fees to 2 decimal places
 def format_cents(amount):
     amount = float(amount)
-    amount = str('{:.2f}'.format(amount))
-
-    return amount
+    return str('{:.2f}'.format(amount))

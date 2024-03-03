@@ -17,7 +17,7 @@ def init():
     current_payment = 1
     button_position = 101  # vertical position in pixels
     screen_sizes = {"ws": root.winfo_screenwidth(), "hs": root.winfo_screenheight()}
-    form = {"version": "v0.10.0", "status": StringVar(value="Ready")}
+    form = {"version": "v0.10.1", "status": StringVar(value="Ready")}
     popups = {"printer": None, "history": None, "elem": {}}
     icons = {}
 

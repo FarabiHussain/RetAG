@@ -16,13 +16,18 @@ from docx import Document
 from CTkMessagebox import CTkMessagebox as popup
 
 
-## HELPER: set the status to reflect which printer is being used, and send the file to be printed
+##############################################################################################################
+############################################## HELPER FUNCTIONS ##############################################
+##############################################################################################################
+
+
+## set the status to reflect which printer is being used, and send the file to be printed
 def send_to_device(selected_printer, to_pdf, is_code_of_conduct):
     vars.form["status"].set("printing on device: " + selected_printer)
     generate_from_form(selected_printer, to_pdf, is_code_of_conduct)
 
 
-## HELPER: generate a dictionary from the form and send it to the doc editor
+## generate a dictionary from the form and send it to the doc editor
 def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
     pay_list = []
 
@@ -70,304 +75,6 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
             vars.form["status"].set("Error")
         else:
             vars.form["status"].set("Agreement created")
-
-
-## BUTTON: add the clicked amount as the total value of the case
-def dollars(amount):
-    vars.form["application_fee_entry"].delete(0, "end")
-    vars.form["application_fee_entry"].insert(0, int(amount))
-
-
-## BUTTON: sets the `date on document` to be today's date
-def today():
-    vars.form["document_date_entry"].delete(0, "end")
-    vars.form["document_date_entry"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
-    vars.form["payment_list"][0]["date"].delete(0, "end")
-    vars.form["payment_list"][0]["date"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
-
-    if vars.current_payment == 1:
-        vars.form["plus_month_btn"] = ctk.CTkButton(
-            vars.root,
-            text="+1 month",
-            border_width=0,
-            corner_radius=4,
-            bg_color="#343638",
-            command=lambda: add_month(),
-            width=60,
-            height=25,
-        )
-
-        vars.form["plus_month_btn"].place(x=568, y=101)
-
-
-## BUTTON: change the position of the `+1month` button
-def reposition_plus_month(place_button):
-    vars.form["plus_month_btn"].destroy()
-
-    vars.form["plus_month_btn"] = ctk.CTkButton(
-        vars.root,
-        text="+1 month",
-        border_width=0,
-        corner_radius=4,
-        bg_color="#343638",
-        command=add_month,
-        width=60,
-        height=25,
-    )
-
-    if place_button:
-        vars.form["plus_month_btn"].place(x=568, y=vars.button_position)
-
-
-## BUTTON: adds 1 month to the previous date in the payments list
-def add_month():
-    pixels_to_next_row = 34
-
-    if (
-        vars.current_payment < 12
-        and len(vars.form["payment_list"][vars.current_payment - 1]["date"].get()) != 0
-    ):
-
-        prev_payment_date = vars.form["payment_list"][vars.current_payment - 1]["date"].get()
-
-        if prev_payment_date == "advance":
-            prev_payment_date = dt.datetime.now().strftime("%d/%m/%Y")
-
-        dt_object = dt.datetime.strptime(prev_payment_date, "%d/%m/%Y")
-        dt_object = dt_object + rd.relativedelta(months=1)
-
-        vars.form["payment_list"][vars.current_payment]["date"].delete(0, "end")
-        vars.form["payment_list"][vars.current_payment]["date"].insert(0, dt_object.strftime("%d/%m/%Y"))
-
-        vars.current_payment += 1
-
-        if vars.current_payment < 12:
-            vars.button_position += pixels_to_next_row
-            vars.form["plus_month_btn"].place(x=568, y=vars.button_position)
-        else:
-            vars.form["plus_month_btn"].destroy()
-
-    elif len(vars.form["payment_list"][0]["date"].get()) == 0:
-        popup(
-            title="Failed",
-            message="Unable to add month as previous payment date is empty",
-            corner_radius=4,
-        )
-
-    elif len(vars.form["payment_list"][vars.current_payment - 1]["date"].get()) < 8:
-        vars.current_payment -= 1
-        vars.button_position -= pixels_to_next_row
-        reposition_plus_month(vars.button_position)
-        add_month()
-
-
-## BUTTON: populate the form with dummy data
-def test_data():
-    vars.form["status"].set("dummy data placed")
-
-    client_name = names.get_full_name()
-    application_fee = random.randint(1, 4) * 1000
-
-    vars.form["client_name_1_entry"].delete(0, "end")
-    vars.form["email_address_1_entry"].delete(0, "end")
-    vars.form["phone_number_1_entry"].delete(0, "end")
-    vars.form["document_date_entry"].delete(0, "end")
-    vars.form["application_fee_entry"].delete(0, "end")
-    vars.form["application_type_entry"].delete(0, "end")
-
-    vars.form["client_name_1_entry"].insert(0, client_name)
-    vars.form["email_address_1_entry"].insert(0, client_name.replace(" ", "").lower() + "@email.com")
-    vars.form["phone_number_1_entry"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
-    vars.form["document_date_entry"].insert(0, "1/3/2024")
-    vars.form["application_fee_entry"].insert(0, application_fee)
-    vars.form["application_type_entry"].insert(0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"]))
-
-    installments = random.randint(1, 12)
-    per_installment = float(application_fee / installments)
-
-    for i in range(12):
-        vars.form["payment_list"][i]["date"].delete(0, "end")
-        vars.form["payment_list"][i]["amount"].delete(0, "end")
-
-    for i in range(installments):
-        m = str((3 + i) % 12 + 1)
-        y = str(int((4 + i) / 12) + 2024)
-
-        vars.form["payment_list"][i]["date"].insert(0, ("1/" + m + "/" + y))
-        vars.form["payment_list"][i]["amount"].insert(0, "{:.2f}".format((per_installment)))
-
-
-## BUTTON: reset the form and variables
-def reset():
-    vars.form["status"].set("form cleared")
-    vars.form = logic_form.reset(vars.form)
-    vars.form["include_taxes"].set(True)
-    vars.form["open_output"].set(True)
-    vars.current_payment = 1
-    vars.button_position = 101
-
-    reposition_plus_month(False)
-
-
-## BUTTON: sets the date to be 'paid in advance' when clients cannot provide a specific date for payment
-def advance():
-    vars.form["payment_list"][0]["date"].delete(0, "end")
-    vars.form["payment_list"][0]["date"].insert(0, "advance")
-
-    if vars.current_payment == 1:
-        reposition_plus_month(True)
-
-
-## BUTTON: open the output folder
-def output():
-    output_dir = os.getcwd() + "\\output"
-    os.startfile(output_dir)
-
-
-## BUTTON: save the retainer as docx
-def docx():
-    vars.form["status"].set("writing docx")
-
-    to_printer = False
-    to_pdf = False
-    is_code_of_conduct = False
-    generate_from_form(to_printer, to_pdf, is_code_of_conduct)
-
-
-## BUTTON: save the retainer as pdf
-def pdf():
-    vars.form["status"].set("creating pdf")
-
-    to_printer = False
-    to_pdf = True
-    is_code_of_conduct = False
-    generate_from_form(to_printer, to_pdf, is_code_of_conduct)
-
-
-## BUTTON: print the retainer or code of conduct
-def print_file(printer_list, to_pdf, is_code_of_conduct):
-    to_printer = StringVar(value=win32print.GetDefaultPrinter())
-    titlebar = "Print Code of Conduct" if is_code_of_conduct else "Print Retainer"
-
-    if vars.popups["printer"] is None or not vars.popups["printer"].winfo_exists():
-        vars.popups["printer"] = ctk.CTkToplevel()
-
-        w = 300
-        h = 200
-        x = (vars.screen_sizes["ws"] / 2) - (w / 2)
-        y = (vars.screen_sizes["hs"] / 2) - (h / 2)
-
-        vars.popups["printer"].geometry("%dx%d+%d+%d" % (w, h, x, y))
-        vars.popups["printer"].focus()
-        vars.popups["printer"].after(201, lambda: vars.popups["printer"].iconbitmap("assets\\logo.ico"))
-        vars.popups["printer"].title(titlebar)
-        vars.popups["printer"].resizable(False, False)
-        vars.popups["printer"].after(100, lambda: vars.popups["printer"].focus())
-
-        vars.form["frame_printer"] = ctk.CTkFrame(vars.popups["printer"], width=w - 20, height=h - 20)
-        vars.form["frame_printer"].place(x=10, y=10)
-        vars.form["select_device_label"] = ctk.CTkLabel(vars.popups["printer"], text="Select Device", bg_color="#212121", fg_color="#212121")
-        vars.form["select_device_label"].place(x=110, y=30)
-        vars.form["printer_dropdown"] = ctk.CTkComboBox(vars.popups["printer"], values=printer_list, border_width=0, corner_radius=4, fg_color="#313131", variable=to_printer)
-        vars.form["printer_dropdown"].place(x=80, y=65)
-
-        vars.form["print_on_device_btn"] = ctk.CTkButton(
-            vars.popups["printer"],
-            text="",
-            corner_radius=4,
-            command=lambda: send_to_device(to_printer, to_pdf, is_code_of_conduct),
-            width=60,
-            height=40,
-            image=(
-                vars.icons["printConduct"]
-                if is_code_of_conduct
-                else vars.icons["printRetainer"]
-            ),
-            border_width=0,
-            fg_color=("#1A8405" if is_code_of_conduct else "#e07b00"),
-        )
-
-        vars.form["print_on_device_btn"].place(x=80, y=110)
-
-        vars.form["test_print_btn"] = ctk.CTkButton(
-            vars.popups["printer"],
-            text="",
-            image=vars.icons["testPrnt"],
-            border_width=1,
-            corner_radius=4,
-            fg_color="#1F1E1E",
-            command=lambda: print_test(to_printer),
-            width=60,
-            height=40,
-        )
-
-        vars.form["test_print_btn"].place(x=160, y=110)
-
-    else:
-        vars.popups["printer"].focus()
-
-
-## BUTTON: print the retainer or code of conduct
-def print_test(to_printer):
-    vars.form["status"].set("printing test")
-
-    # defining the file path
-    file_path = os.getcwd() + "\\assets\\test.docx"
-
-    # delete any file called test.docx in case it already exists and has contents
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
-    # create a new document with nothing in it
-    document = Document()
-    document.save(file_path)
-
-    # print the blank document
-    win32print.SetDefaultPrinter(to_printer.get())
-    win32api.ShellExecute(0, "print", file_path, None, ".", 0)
-
-    # add a delay so that the print command has time to find the file, then remove the document
-    time.sleep(2)
-    if os.path.exists(file_path):
-        os.remove(file_path)
-
-
-## BUTTON: display the popup containing the history
-def history_window():
-
-    # make sure that the popup does not already exist to avoid duplicates
-    if (vars.popups['history'] is None or not vars.popups['history'].winfo_exists()): 
-
-        vars.popups['history'] = ctk.CTkToplevel()
-
-        w = 1200
-        h = 800
-        x = (vars.screen_sizes['ws']/2) - (w/2)
-        y = (vars.screen_sizes['hs']/2) - (h/2)
-
-        header_frame = ctk.CTkFrame(vars.popups['history'], width=1123, height=35, fg_color='transparent')
-        header_frame.place(x=40, y=755)
-
-        vars.popups['elem']['history_entries'] = history.retrieve()
-        vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
-        vars.popups['elem']['scr_frame'].place(x=40, y=10)
-        render_table(vars.popups['elem']['history_entries'])
-
-        # the buttons at the bottom of the popup for operations
-        vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='import client', width=200, corner_radius=4, fg_color="#1F1E1E")
-        vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
-        vars.popups['elem']['import_button'].place(x=400, y=2)
-        vars.popups['elem']['status_button'].place(x=605, y=2)
-
-        ## render the popup
-        vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
-        vars.popups['history'].resizable(False, False)
-        vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\logo.ico"))
-        vars.popups['history'].title("Retainer History")
-        vars.popups['history'].after(1, lambda: vars.popups['history'].focus())
-
-    else:
-        vars.popups['history'].focus()
 
 
 ## render the table using the list of dicts passed
@@ -433,6 +140,321 @@ def select(str_var):
         vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
     else:
         vars.popups['elem']['status_button'].configure(state='normal', text='set active', fg_color="#1A8405", command=lambda:toggle_status(entry))
+
+
+##############################################################################################################
+############################################### BUTTON HANDLERS ##############################################
+##############################################################################################################
+
+
+## add the clicked amount as the total value of the case
+def dollars(amount):
+    vars.form["application_fee_entry"].delete(0, "end")
+    vars.form["application_fee_entry"].insert(0, int(amount))
+
+
+## sets the `date on document` to be today's date
+def today():
+    vars.form["document_date_entry"].delete(0, "end")
+    vars.form["document_date_entry"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
+    vars.form["payment_list"][0]["date"].delete(0, "end")
+    vars.form["payment_list"][0]["date"].insert(0, dt.datetime.now().strftime("%d/%m/%Y"))
+
+    if vars.current_payment == 1:
+        vars.form["plus_month_btn"] = ctk.CTkButton(
+            vars.root,
+            text="+1 month",
+            border_width=0,
+            corner_radius=4,
+            bg_color="#343638",
+            command=lambda: add_month(),
+            width=60,
+            height=25,
+        )
+
+        vars.form["plus_month_btn"].place(x=568, y=101)
+
+
+## change the position of the `+1month` button
+def reposition_plus_month(place_button):
+    vars.form["plus_month_btn"].destroy()
+    vars.form["plus_month_btn"] = ctk.CTkButton(vars.root, text="+1 month", border_width=0, corner_radius=4, bg_color="#343638", command=add_month, width=60, height=25)
+
+    if place_button:
+        vars.form["plus_month_btn"].place(x=568, y=vars.button_position)
+
+
+## adds 1 month to the previous date in the payments list
+def add_month():
+    pixels_to_next_row = 34
+
+    if (
+        vars.current_payment < 12
+        and len(vars.form["payment_list"][vars.current_payment - 1]["date"].get()) != 0
+    ):
+
+        prev_payment_date = vars.form["payment_list"][vars.current_payment - 1]["date"].get()
+
+        if prev_payment_date == "advance":
+            prev_payment_date = dt.datetime.now().strftime("%d/%m/%Y")
+
+        dt_object = dt.datetime.strptime(prev_payment_date, "%d/%m/%Y")
+        dt_object = dt_object + rd.relativedelta(months=1)
+
+        vars.form["payment_list"][vars.current_payment]["date"].delete(0, "end")
+        vars.form["payment_list"][vars.current_payment]["date"].insert(0, dt_object.strftime("%d/%m/%Y"))
+
+        vars.current_payment += 1
+
+        if vars.current_payment < 12:
+            vars.button_position += pixels_to_next_row
+            vars.form["plus_month_btn"].place(x=568, y=vars.button_position)
+        else:
+            vars.form["plus_month_btn"].destroy()
+
+    elif len(vars.form["payment_list"][0]["date"].get()) == 0:
+        popup(
+            title="",
+            message="Unable to add month as previous payment date is empty",
+            corner_radius=4,
+        )
+
+    elif len(vars.form["payment_list"][vars.current_payment - 1]["date"].get()) < 8:
+        vars.current_payment -= 1
+        vars.button_position -= pixels_to_next_row
+        reposition_plus_month(vars.button_position)
+        add_month()
+
+
+## populate the form with dummy data
+def test_data():
+    vars.form["status"].set("dummy data placed")
+    os.system('cls')
+
+    client_qty = random.choice([1,2])
+    client_1_gender = random.choice(['male', 'female'])
+    client_2_gender = 'male' if client_1_gender == 'female' else 'female'
+
+    client_name_1 = names.get_full_name(gender=client_1_gender)
+    client_name_2 = names.get_full_name(gender=client_2_gender)
+    application_fee = random.randint(1, 4) * 1000
+
+    vars.form["client_name_1_entry"].delete(0, "end")
+    vars.form["email_address_1_entry"].delete(0, "end")
+    vars.form["phone_number_1_entry"].delete(0, "end")
+    vars.form["client_name_2_entry"].delete(0, "end")
+    vars.form["email_address_2_entry"].delete(0, "end")
+    vars.form["phone_number_2_entry"].delete(0, "end")
+    vars.form["document_date_entry"].delete(0, "end")
+    vars.form["application_fee_entry"].delete(0, "end")
+    vars.form["application_type_entry"].delete(0, "end")
+
+    vars.form["client_name_1_entry"].insert(0, client_name_1)
+    vars.form["email_address_1_entry"].insert(0, client_name_1.replace(" ", "").lower() + "@email.com")
+    vars.form["phone_number_1_entry"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
+
+    if (client_qty > 1):
+        vars.form["client_name_2_entry"].insert(0, client_name_2)
+        vars.form["email_address_2_entry"].insert(0, client_name_2.replace(" ", "").lower() + "@email.com")
+        vars.form["phone_number_2_entry"].insert(0, random.choice(["431", "204"]) + str(random.randint(1000000, 9999999)))
+
+    vars.form["document_date_entry"].insert(0, "1/4/2024")
+    vars.form["application_fee_entry"].insert(0, application_fee)
+    vars.form["application_type_entry"].insert(0, random.choice(["EOI", "MPNP", "PR", "PGWP", "Citizenship"]))
+
+    installments = random.randint(1, 12)
+    per_installment = float(application_fee / installments)
+
+    for i in range(12):
+        vars.form["payment_list"][i]["date"].delete(0, "end")
+        vars.form["payment_list"][i]["amount"].delete(0, "end")
+
+    for i in range(installments):
+        m = str((3 + i) % 12 + 1)
+        y = str(int((4 + i) / 12) + 2024)
+
+        vars.form["payment_list"][i]["date"].insert(0, ("1/" + m + "/" + y))
+        vars.form["payment_list"][i]["amount"].insert(0, "{:.2f}".format((per_installment)))
+
+
+## reset the form and variables
+def reset():
+    vars.form["status"].set("form cleared")
+    vars.form = logic_form.reset(vars.form)
+    vars.form["include_taxes"].set(True)
+    vars.form["open_output"].set(True)
+    vars.current_payment = 1
+    vars.button_position = 101
+
+    reposition_plus_month(False)
+
+
+## sets the date to be 'paid in advance' when clients cannot provide a specific date for payment
+def advance():
+    vars.form["payment_list"][0]["date"].delete(0, "end")
+    vars.form["payment_list"][0]["date"].insert(0, "advance")
+
+    if vars.current_payment == 1:
+        reposition_plus_month(True)
+
+
+## open the output folder
+def output():
+    output_dir = os.getcwd() + "\\output"
+    os.startfile(output_dir)
+
+
+## save the retainer as docx
+def docx():
+    vars.form["status"].set("writing docx")
+
+    to_printer = False
+    to_pdf = False
+    is_code_of_conduct = False
+    generate_from_form(to_printer, to_pdf, is_code_of_conduct)
+
+
+## save the retainer as pdf
+def pdf():
+    vars.form["status"].set("creating pdf")
+
+    to_printer = False
+    to_pdf = True
+    is_code_of_conduct = False
+    generate_from_form(to_printer, to_pdf, is_code_of_conduct)
+
+
+## print the retainer or code of conduct
+def print_file(printer_list, to_pdf, is_code_of_conduct):
+    to_printer = StringVar(value=win32print.GetDefaultPrinter())
+    titlebar = "Print Code of Conduct" if is_code_of_conduct else "Print Retainer"
+
+    if vars.popups["printer"] is None or not vars.popups["printer"].winfo_exists():
+        vars.popups["printer"] = ctk.CTkToplevel()
+
+        w = 300
+        h = 200
+        x = (vars.screen_sizes["ws"] / 2) - (w / 2)
+        y = (vars.screen_sizes["hs"] / 2) - (h / 2)
+
+        vars.popups["printer"].geometry("%dx%d+%d+%d" % (w, h, x, y))
+        vars.popups["printer"].focus()
+        vars.popups["printer"].after(201, lambda: vars.popups["printer"].iconbitmap("assets\\icons\\logo.ico"))
+        vars.popups["printer"].title(titlebar)
+        vars.popups["printer"].resizable(False, False)
+        vars.popups["printer"].after(100, lambda: vars.popups["printer"].focus())
+
+        vars.form["frame_printer"] = ctk.CTkFrame(vars.popups["printer"], width=w - 20, height=h - 20)
+        vars.form["frame_printer"].place(x=10, y=10)
+        vars.form["select_device_label"] = ctk.CTkLabel(vars.popups["printer"], text="Select Device", bg_color="#212121", fg_color="#212121")
+        vars.form["select_device_label"].place(x=110, y=30)
+        vars.form["printer_dropdown"] = ctk.CTkComboBox(vars.popups["printer"], values=printer_list, border_width=0, corner_radius=4, fg_color="#313131", variable=to_printer)
+        vars.form["printer_dropdown"].place(x=80, y=65)
+
+        vars.form["print_on_device_btn"] = ctk.CTkButton(
+            vars.popups["printer"],
+            text="",
+            corner_radius=4,
+            command=lambda: send_to_device(to_printer, to_pdf, is_code_of_conduct),
+            width=60,
+            height=40,
+            image=(
+                vars.icons["printConduct"]
+                if is_code_of_conduct
+                else vars.icons["printRetainer"]
+            ),
+            border_width=0,
+            fg_color=("#1A8405" if is_code_of_conduct else "#e07b00"),
+        )
+
+        vars.form["print_on_device_btn"].place(x=80, y=110)
+
+        vars.form["test_print_btn"] = ctk.CTkButton(
+            vars.popups["printer"],
+            text="",
+            image=vars.icons["testPrnt"],
+            border_width=1,
+            corner_radius=4,
+            fg_color="#1F1E1E",
+            command=lambda: print_test(to_printer),
+            width=60,
+            height=40,
+        )
+
+        vars.form["test_print_btn"].place(x=160, y=110)
+
+    else:
+        vars.popups["printer"].focus()
+
+
+## print the retainer or code of conduct
+def print_test(to_printer):
+    vars.form["status"].set("printing test")
+
+    # defining the file path
+    file_path = os.getcwd() + "\\assets\\test.docx"
+
+    # delete any file called test.docx in case it already exists and has contents
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+    # create a new document with nothing in it
+    document = Document()
+    document.save(file_path)
+
+    # print the blank document
+    win32print.SetDefaultPrinter(to_printer.get())
+    win32api.ShellExecute(0, "print", file_path, None, ".", 0)
+
+    # add a delay so that the print command has time to find the file, then remove the document
+    time.sleep(2)
+    if os.path.exists(file_path):
+        os.remove(file_path)
+
+
+## display the popup containing the history
+def history_window():
+
+    vars.popups['elem']['history_entries'] = history.retrieve()
+
+    # there must be at least one entry in the list
+    if (len(vars.popups['elem']['history_entries']) > 0):
+
+        # make sure that the popup does not already exist to avoid duplicates
+        if (vars.popups['history'] is None or not vars.popups['history'].winfo_exists()): 
+
+            vars.popups['history'] = ctk.CTkToplevel()
+
+            w = 1200
+            h = 800
+            x = (vars.screen_sizes['ws']/2) - (w/2)
+            y = (vars.screen_sizes['hs']/2) - (h/2)
+
+            header_frame = ctk.CTkFrame(vars.popups['history'], width=1123, height=35, fg_color='transparent')
+            header_frame.place(x=40, y=755)
+
+            vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
+            vars.popups['elem']['scr_frame'].place(x=40, y=10)
+            render_table(vars.popups['elem']['history_entries'])
+
+            # the buttons at the bottom of the popup for operations
+            vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='import client', width=200, corner_radius=4, fg_color="#1F1E1E")
+            vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
+            vars.popups['elem']['import_button'].place(x=400, y=2)
+            vars.popups['elem']['status_button'].place(x=605, y=2)
+
+            ## render the popup
+            vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
+            vars.popups['history'].resizable(False, False)
+            vars.popups['history'].after(201, lambda: vars.popups['history'].iconbitmap("assets\\icons\\logo.ico"))
+            vars.popups['history'].title("Retainer History")
+            vars.popups['history'].after(1, lambda: vars.popups['history'].focus())
+
+        else:
+            vars.popups['history'].focus()
+
+    else:
+        popup(title="", message='No entries in history', corner_radius=4)
 
 
 ## import the entry into the form

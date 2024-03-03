@@ -14,7 +14,8 @@ latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2]
 ver[2] = "[" + str(int(unformat(ver[2])) + 1) + "]"
 
 # install dependencies needed to build the file
-# install_dependencies()
+if '-deps' in sys.argv:
+    install_dependencies()
 
 while True:
     os.system('cls')

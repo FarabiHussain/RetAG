@@ -23,7 +23,7 @@ def init_form():
     y = (vars.screen_sizes['hs']/2) - (h/2) - 170
 
     vars.root.geometry('%dx%d+%d+%d' % (w, h, x, y))
-    vars.root.iconbitmap(resource_path("assets\\logo.ico"))
+    vars.root.iconbitmap(resource_path("assets\\icons\\logo.ico"))
     vars.root.title("AMCAIM RetAG (" + vars.form['version'] + ")")
 
     # string, boolean variables and tracers
