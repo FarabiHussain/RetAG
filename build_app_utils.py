@@ -1,4 +1,9 @@
-import os, glob, shutil
+import fileinput
+import os
+import glob
+import shutil
+import re
+import sys
 from datetime import datetime as dt
 from subprocess import DEVNULL, STDOUT, check_call
 
@@ -48,7 +53,7 @@ def cleanup(cwd, isInitial = False):
             os.remove(f)
 
 
-##
+## pip install libs needed to build the app 
 def install_dependencies():
     os.system('cls')
     for library in ['pyinstaller', 'python-dateutil', 'python-docx', 'docx2pdf', 'customtkinter', 'CTkTable', 'CTkMessagebox', 'pandas']:
@@ -57,14 +62,14 @@ def install_dependencies():
     print("done")
 
 
-##
+## run the PyInstaller build command
 def build_exe(cwd, ver):
     cleanup(cwd, isInitial = True)
 
     ## build the exe from py files
     os.system("cls")
     print("building exe...")
-    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=assets\\logo.ico', '--name=RetAG'], stdout=DEVNULL, stderr=STDOUT)
+    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=assets\\icons\\logo.ico', '--name=RetAG'], stdout=DEVNULL, stderr=STDOUT)
     print("done")
 
     ## after the exe is built, copy over the assets folder
@@ -96,3 +101,19 @@ def build_exe(cwd, ver):
 
     output_dir = (cwd + "\\releases")
     os.startfile(output_dir)
+
+
+## replace the app version in `variables.py` with the selected version 
+def set_version(ver):
+    version_regex = "[0-9]+.[0-9]+.[0-9]+"
+
+    # iterate through the file, attempt to find version_regex
+    for line in fileinput.input('variables.py', inplace=1):
+        ver_match = re.search(version_regex, line)
+
+        # if version_regex is found, replace it with the newly selected version number
+        if (ver_match is not None):
+            line = line.replace(ver_match.group(), (".").join(ver))
+
+        # write all lines into file so that nothing else is changed
+        sys.stdout.write(line)

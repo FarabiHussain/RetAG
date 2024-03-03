@@ -14,7 +14,6 @@ run `build_app.py` and follow the instructions on the screen
 ## Build mannually:
 install dependencies:
 - [CTkMessagebox](https://pypi.org/project/CTkMessagebox/)
-- [CTkTable](https://pypi.org/project/CTkTable/)
 - [pyinstaller/](https://pypi.org/project/pyinstaller/)
 - [customtkinter](https://pypi.org/project/customtkinter/)
 - [docx2pdf](https://pypi.org/project/docx2pdf/)

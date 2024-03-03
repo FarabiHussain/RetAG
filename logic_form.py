@@ -1,4 +1,6 @@
-import editor, re, os, csv
+import editor
+import re
+import variables as vars
 from CTkMessagebox import CTkMessagebox as popup
 
 
@@ -8,14 +10,12 @@ def validate(fill_info):
 
     for key, val in fill_info.items():
 
-        if (len(fill_info[key]) < 1):
-            popup(icon="cancel", title="Error", message="All fields need to be filled", corner_radius=4)
-            print("All fields need to be filled")
+        if (("_2" not in key) and len(fill_info[key]) < 1):
+            popup(icon="cancel", title="Error", message="Payment, application, and at least Client 1 information needs to be filled", corner_radius=4)
             return False
 
-        if (key == "email_address") and ("@" not in fill_info[key]) and ("." not in fill_info[key]):
-            popup(icon="cancel", title="Error", message="Invalid email address", corner_radius=4)
-            print("Invalid email address")
+        if (key == "email_address_1") and ("@" not in fill_info[key]) and ("." not in fill_info[key]):
+            popup(icon="cancel", title="Error", message="Invalid email address in Client 1", corner_radius=4)
             return False
 
         if (key == "payment_list"):
@@ -50,36 +50,23 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct):
+def generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
     if (validate(fill_info) == True):
-        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, toPrinter, toPdf, isCodeOfConduct)
-
-    return False
-
-
-#
-def get_history():
-    logs_dir = os.getcwd() + "\\logs\\"
-
-    if not os.path.exists(logs_dir):
-        print("path does not exist")
-        return None
-    elif not os.path.exists(logs_dir + "\\history.csv"):
-        print("file does not exist")
-        return None
+        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct)
     else:
-        with open(logs_dir + "\\history.csv", mode='r') as infile:
-            return list(csv.DictReader(infile))
+        print('not validated')
+        return False
+
 
 
 ## reset form fields
 def reset(form_elements):
-    form_elements['client_name'].delete(0, "end")
-    form_elements['application_type'].delete(0, "end")
-    form_elements['application_fee'].delete(0, "end")
-    form_elements['email_address'].delete(0, "end")
-    form_elements['phone_number'].delete(0, "end")
-    form_elements['document_date'].delete(0, "end")
+    form_elements['client_name_1_entry'].delete(0, "end")
+    form_elements['email_address_1_entry'].delete(0, "end")
+    form_elements['phone_number_1_entry'].delete(0, "end")
+    form_elements['document_date_entry'].delete(0, "end")
+    form_elements['application_type_entry'].delete(0, "end")
+    form_elements['application_fee_entry'].delete(0, "end")
 
     for i in range(len(form_elements['payment_list'])):
         form_elements['payment_list'][i]['amount'].delete(0, "end")
@@ -88,3 +75,30 @@ def reset(form_elements):
         form_elements['payment_list'][i]['date'].insert("end", "")
 
     return form_elements
+
+
+##
+def autofill_amount(var, index, mode):
+    amount_input = vars.form['autofill_amount'].get()
+    (vars.form['payment_list'][0]['amount']).delete(0, 'end')
+    (vars.form['payment_list'][0]['amount']).insert(0, amount_input)
+
+
+##
+def autofill_date(var, index, mode):
+    doc_date = vars.form['document_date_entry'].get()
+
+    for i in range(len(doc_date)):
+        if (doc_date[i].isdigit() or doc_date[i] == '/'):
+            (vars.form['payment_list'][0]['date']).delete(0, 'end')
+            (vars.form['payment_list'][0]['date']).insert(0, doc_date)
+        else:
+            (vars.form['document_date_entry']).delete(0, 'end')
+            (vars.form['document_date_entry']).insert(0, doc_date[0:-1])
+            (vars.form['payment_list'][0]['date']).delete(0, 'end')
+            (vars.form['payment_list'][0]['date']).insert(0, doc_date[0:-1])
+
+    if (len(doc_date) == 0):
+        (vars.form['payment_list'][0]['date']).delete(0, 'end')
+
+

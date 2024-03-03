@@ -1,4 +1,5 @@
-import os, msvcrt
+import os
+import msvcrt
 from build_app_utils import *
 
 cwd = os.getcwd()
@@ -13,7 +14,8 @@ latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2]
 ver[2] = "[" + str(int(unformat(ver[2])) + 1) + "]"
 
 # install dependencies needed to build the file
-install_dependencies()
+if '-deps' in sys.argv:
+    install_dependencies()
 
 while True:
     os.system('cls')
@@ -30,8 +32,10 @@ while True:
     for i in range(len(ver)):
         ver[i] = unformat(ver[i])
 
-    try: kb = kb.decode(encoding='utf-8')
-    except: pass
+    try: 
+        kb = kb.decode(encoding='utf-8')
+    except: 
+        pass
 
     if kb == "a":
         cur = (cur - 1) % 3
@@ -44,6 +48,7 @@ while True:
     elif kb == "e":
         for i in range(len(ver)):
             ver[i] = unformat(ver[i])
+        set_version(ver)
         build_exe(cwd, ver)
         break
     elif kb == "q":
