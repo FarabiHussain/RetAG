@@ -3,7 +3,7 @@
 /dist
 /output
 /releases
+/write
 *.spec
 *.zip
 *.pdf
-# *.csv
