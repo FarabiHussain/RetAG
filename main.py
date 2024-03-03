@@ -14,7 +14,7 @@ from CTkTableRowSelector import *
 def init_form():
 
     # populate the list of printers
-    printer_list = [printer[2] for printer in win32print.EnumPrinters(2) if 'PDF' not in printer[2]]
+    printer_list = [printer[2] for printer in win32print.EnumPrinters(2)]
 
     # calculate x and y coordinates for the Tk root window
     w = 800

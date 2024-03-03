@@ -23,8 +23,8 @@ from CTkMessagebox import CTkMessagebox as popup
 
 ## set the status to reflect which printer is being used, and send the file to be printed
 def send_to_device(selected_printer, to_pdf, is_code_of_conduct):
-    vars.form["status"].set("printing on device: " + selected_printer)
-    generate_from_form(selected_printer, to_pdf, is_code_of_conduct)
+    vars.form["status"].set("printing on device: " + selected_printer.get())
+    generate_from_form(selected_printer.get(), to_pdf, is_code_of_conduct)
 
 
 ## generate a dictionary from the form and send it to the doc editor
@@ -77,9 +77,20 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
             vars.form["status"].set("Agreement created")
 
 
+## format retainers with multiple clients to show only their last names in the histoey window
+def set_client_name(client_name):
+    client_name_list = client_name.split(";")
+
+    if len(client_name_list) == 2:
+        return (client_name_list[0].split(" "))[-1] + " & " + (client_name_list[1].split(" "))[-1]
+
+    return client_name_list[0]
+
+
 ## render the table using the list of dicts passed
 def render_table(history_entries):
     radio_var = StringVar(value="")
+    radio_btn_text = StringVar(value="")
 
     for i, entry in enumerate(history_entries):
 
@@ -88,14 +99,14 @@ def render_table(history_entries):
 
             # add the radio button
             ctk.CTkRadioButton(
-                vars.popups['elem']['scr_frame'], width=1100/6, text=entry['client_name'], radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
+                vars.popups['elem']['scr_frame'], width=1100/6, text=set_client_name(entry['client_name']), radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
             ).grid(row=i, column=0, pady=5)
 
             # columns with data
             for j, info in enumerate(['created_by', 'created_date', 'application_type', 'application_fee', 'is_active']):
 
                 # add some formatting where needed
-                label_text = entry[info].replace(";", ", ")
+                label_text = entry[info]
                 active_color = 'white'
 
                 if (info == 'is_active'):
@@ -134,7 +145,7 @@ def select(str_var):
     entry = json.loads(singleQuoteToDoubleQuote(str_var))
 
     # set the button states and colors based on the selected entry
-    vars.popups['elem']['import_button'].configure(text="import " + entry['client_name'], fg_color='#383FBC', command=lambda:import_entry(entry))
+    vars.popups['elem']['import_button'].configure(text="import " + set_client_name(entry['client_name']), fg_color='#383FBC', command=lambda:import_entry(entry))
 
     if (entry['is_active'].lower() == 'true'):
         vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
