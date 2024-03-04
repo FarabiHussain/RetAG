@@ -7,7 +7,7 @@ ver = ['0', '0', '0']
 kb = None
 cur = 2
 
-ver = get_version(ver)
+ver = get_version(cwd, ver)
 latest_build = unformat(ver[0]) + "." + unformat(ver[1]) + "." + unformat(ver[2])
 
 # increment the patch number for the current build

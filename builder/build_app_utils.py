@@ -8,9 +8,11 @@ from datetime import datetime as dt
 from subprocess import DEVNULL, STDOUT, check_call
 
 ## read the most recent version created
-def get_version(ver):
+def get_version(cwd, ver):
+    ver_log_dir = (cwd + '\\builder\\versions.log').replace('\\builder\\builder', '\\builder')
+
     try:
-        with open('versions.log', 'r') as log_file:
+        with open(ver_log_dir, 'r') as log_file:
             latest = log_file.readlines()[-1]
             latest = latest.split("v")[1]
             latest = latest.split(".")
