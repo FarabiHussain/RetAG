@@ -98,7 +98,9 @@ def build_exe(cwd, ver):
     print("done")
 
     ## write the newest build to the log
-    with open('versions.log', 'a') as log_file:
+    ver_log_dir = (cwd + '\\builder\\versions.log').replace('\\builder\\builder', '\\builder')
+
+    with open(ver_log_dir, 'a') as log_file:
         log_file.write("\n[" + dt.now().strftime("%d/%m/%Y, %H:%M:%I" + "]\t") + "v" + (".").join(ver))
 
     output_dir = (cwd + "\\releases")
