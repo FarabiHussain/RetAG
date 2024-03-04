@@ -36,14 +36,14 @@ def unformat(formatted):
 
 ## clean up existing files
 def cleanup(cwd, isInitial = False):
-    if os.path.exists(cwd + "\\build"):
-        shutil.rmtree(cwd + "\\build")
+    if os.path.exists(cwd + "\\..\\build"):
+        shutil.rmtree(cwd + "\\..\\build")
 
-    if os.path.exists(cwd + "\\dist"):
-        shutil.rmtree(cwd + "\\dist")
+    if os.path.exists(cwd + "\\..\\dist"):
+        shutil.rmtree(cwd + "\\..\\dist")
 
-    if not os.path.exists(cwd + "\\releases"):
-        os.makedirs(cwd + "\\releases")
+    if not os.path.exists(cwd + "\\..\\releases"):
+        os.makedirs(cwd + "\\..\\releases")
 
     for f in glob.glob("*.spec"):
         os.remove(f)
@@ -69,12 +69,12 @@ def build_exe(cwd, ver):
     ## build the exe from py files
     os.system("cls")
     print("building exe...")
-    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=assets\\icons\\logo.ico', '--name=RetAG'], stdout=DEVNULL, stderr=STDOUT)
+    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=' + cwd + '\\assets\\icons\\logo.ico', '--name=RetAG'], stdout=DEVNULL, stderr=STDOUT)
     print("done")
 
     ## after the exe is built, copy over the assets folder
     try: 
-        shutil.copytree(cwd + "\\assets\\", cwd + "\\dist\\assets\\")
+        shutil.copytree(cwd + "\\..\\assets\\", cwd + "\\..\\dist\\assets\\")
     except: 
         print("could not copy assets folder")
 
@@ -86,8 +86,8 @@ def build_exe(cwd, ver):
 
     ## move the created zip file into the releases folder
     try:
-        for file in glob.glob(cwd + '\\v*.zip'):
-            shutil.move(file, cwd + "\\releases")
+        for file in glob.glob(cwd + '\\..\\v*.zip'):
+            shutil.move(file, cwd + "\\..\\releases")
     except Exception as e: print("could not move zip file: ", e)
 
     ## final cleanup of temporary files
@@ -99,7 +99,7 @@ def build_exe(cwd, ver):
     with open('versions.log', 'a') as log_file:
         log_file.write("\n[" + dt.now().strftime("%d/%m/%Y, %H:%M:%I" + "]\t") + "v" + (".").join(ver))
 
-    output_dir = (cwd + "\\releases")
+    output_dir = (cwd + "\\..\\releases")
     os.startfile(output_dir)
 
 
