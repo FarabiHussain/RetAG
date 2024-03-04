@@ -1,4 +1,5 @@
 /__pycache__
+/builder/__pycache__/
 /write
 /build
 /dist
