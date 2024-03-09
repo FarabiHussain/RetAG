@@ -13,7 +13,7 @@
 - `--deps` to install dependencies.
 
 ## Build manually:
-1. run ```pip install CTkMessagebox pyinstaller customtkinter docx2pdf python-docx python-dateutil``` install dependencies:
+1. run ```pip install CTkMessagebox pyinstaller customtkinter docx2pdf python-docx python-dateutil``` to install dependencies:
     - [CTkMessagebox](https://pypi.org/project/CTkMessagebox/)
     - [pyinstaller](https://pypi.org/project/pyinstaller/)
     - [customtkinter](https://pypi.org/project/customtkinter/)
@@ -21,4 +21,4 @@
     - [python-docx](https://pypi.org/project/python-docx/)
     - [python-dateutil](https://pypi.org/project/python-dateutil/)
 
-2. run ```python -m PyInstaller main.py --onefile -w --icon=assets\logo.ico --name="RetAG"```
+2. run ```python -m PyInstaller main.py --onefile -w --icon=assets\icons\logo.ico --name="RetAG"```
