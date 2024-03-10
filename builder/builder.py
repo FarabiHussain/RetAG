@@ -1,6 +1,6 @@
 import os
 import msvcrt
-from build_app_utils import *
+from builder_utils import *
 
 cwd = os.getcwd()
 ver = ['0', '0', '0']
