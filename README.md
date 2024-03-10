@@ -7,7 +7,7 @@
 - run the executable.
 
 ## Build using script (recommended):
-### Run `build_app_main.py` with optional flags:
+### Run `builder.py` with optional flags:
 - no flags will build the exe with the next minor build number.
 - `--selector` to show version selector in the terminal.
 - `--deps` to install dependencies.
