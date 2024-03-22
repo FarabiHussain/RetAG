@@ -41,9 +41,9 @@ def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
                 elif (info_type == 'email_address_'):
                     client_emails.append(form[info_type + client_no])
                 elif (info_type == 'phone_number_'):
-                    # remove phone number formatting like brackets, hyphens, whitespaces, +1's
-                    current_ph = re.sub("-*|\\(*|\\)*|\\s|[+1]", "_", form[info_type + client_no])
-                    client_phones.append(current_ph)
+                    # remove phone number formatting like brackets, hyphens, whitespaces
+                    current_ph = re.sub("-*|\\(*|\\)*|\\s|", "", form[info_type + client_no])
+                    client_phones.append(f"'{current_ph}'")
 
     # things to enter into the new entry
     history_entry = [os.environ['COMPUTERNAME']]

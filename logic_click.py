@@ -99,24 +99,24 @@ def render_table(history_entries):
 
             # add the radio button
             ctk.CTkRadioButton(
-                vars.popups['elem']['scr_frame'], width=1100/6, text=set_client_name(entry['client_name']), radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
+                vars.popups['elem']['scr_frame'], width=1100/5, text=set_client_name(entry['client_name']), radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
             ).grid(row=i, column=0, pady=5)
 
             # columns with data
-            for j, info in enumerate(['created_by', 'created_date', 'application_type', 'application_fee', 'is_active']):
+            for j, info in enumerate(['created_by', 'created_date', 'application_type', 'application_fee']):
 
                 # add some formatting where needed
                 label_text = entry[info]
                 active_color = 'white'
 
-                if (info == 'is_active'):
-                    label_text = 'inactive' if entry[info].lower() == 'false' else 'active'
-                    active_color = '#b02525' if entry[info].lower() == 'false' else '#1A8405'
-                elif (info == 'application_fee'):
+                # if (info == 'is_active'):
+                #     label_text = 'inactive' if entry[info].lower() == 'false' else 'active'
+                #     active_color = '#b02525' if entry[info].lower() == 'false' else '#1A8405'
+                if (info == 'application_fee'):
                     label_text = '$' + entry[info]
 
                 ctk.CTkLabel(
-                    vars.popups['elem']['scr_frame'], text=label_text, text_color=active_color, width=1100/6, fg_color=('transparent' if i%2==0 else '#292929')
+                    vars.popups['elem']['scr_frame'], text=label_text, text_color=active_color, width=1100/5, fg_color=('transparent' if i%2==0 else '#292929')
                 ).grid(row=i, column=(j+1), padx=0, pady=5)
 
 
@@ -147,10 +147,10 @@ def select(str_var):
     # set the button states and colors based on the selected entry
     vars.popups['elem']['import_button'].configure(text="import " + set_client_name(entry['client_name']), fg_color='#383FBC', command=lambda:import_entry(entry))
 
-    if (entry['is_active'].lower() == 'true'):
-        vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
-    else:
-        vars.popups['elem']['status_button'].configure(state='normal', text='set active', fg_color="#1A8405", command=lambda:toggle_status(entry))
+    # if (entry['is_active'].lower() == 'true'):
+    #     vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
+    # else:
+    #     vars.popups['elem']['status_button'].configure(state='normal', text='set active', fg_color="#1A8405", command=lambda:toggle_status(entry))
 
 
 ##############################################################################################################
@@ -398,7 +398,7 @@ def print_file(printer_list, to_pdf, is_code_of_conduct):
         vars.popups["printer"].focus()
 
 
-## print the retainer or code of conduct
+## print a blank page to test the printer
 def print_test(to_printer):
     vars.form["status"].set("printing test")
 
@@ -450,9 +450,9 @@ def history_window():
 
             # the buttons at the bottom of the popup for operations
             vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='import client', width=200, corner_radius=4, fg_color="#1F1E1E")
-            vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
+            # vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
             vars.popups['elem']['import_button'].place(x=400, y=2)
-            vars.popups['elem']['status_button'].place(x=605, y=2)
+            # vars.popups['elem']['status_button'].place(x=605, y=2)
 
             ## render the popup
             vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
@@ -477,34 +477,34 @@ def import_entry(entry):
 
     # set the form entries
     vars.form['document_date_entry'].delete(0, 'end')
-    vars.form['document_date_entry'].insert(0, entry['date_on_document'])
+    vars.form['document_date_entry'].insert(0, entry['date_on_document'].replace("_", " "))
 
     vars.form['application_type_entry'].delete(0, 'end')
-    vars.form['application_type_entry'].insert(0, entry['application_type'])
+    vars.form['application_type_entry'].insert(0, entry['application_type'].replace("_", ", "))
 
     vars.form['application_fee_entry'].delete(0, 'end')
     vars.form['application_fee_entry'].insert(0, entry['application_fee'])
 
     vars.form['client_name_1_entry'].delete(0, 'end')
-    vars.form['client_name_1_entry'].insert(0, client_names[0])
+    vars.form['client_name_1_entry'].insert(0, client_names[0].replace("_", " "))
 
     vars.form['email_address_1_entry'].delete(0, 'end')
-    vars.form['email_address_1_entry'].insert(0, client_emails[0])
+    vars.form['email_address_1_entry'].insert(0, client_emails[0].replace("_", " "))
 
     vars.form['phone_number_1_entry'].delete(0, 'end')
-    vars.form['phone_number_1_entry'].insert(0, client_phones[0])
+    vars.form['phone_number_1_entry'].insert(0, client_phones[0].replace("'", ""))
 
     vars.form['client_name_2_entry'].delete(0, 'end')
-    vars.form['client_name_2_entry'].insert(0, '' if len(client_names) == 1 else client_names[1])
+    vars.form['client_name_2_entry'].insert(0, '' if len(client_names) == 1 else client_names[1].replace("_", " "))
 
     vars.form['email_address_2_entry'].delete(0, 'end')
-    vars.form['email_address_2_entry'].insert(0, '' if len(client_emails) == 1 else client_emails[1])
+    vars.form['email_address_2_entry'].insert(0, '' if len(client_emails) == 1 else client_emails[1].replace("_", " "))
 
     vars.form['phone_number_2_entry'].delete(0, 'end')
-    vars.form['phone_number_2_entry'].insert(0, '' if len(client_phones) == 1 else client_phones[1])
+    vars.form['phone_number_2_entry'].insert(0, '' if len(client_phones) == 1 else client_phones[1].replace("'", ""))
 
     vars.form['include_taxes'].set(True)
-    vars.form['is_active'].set(False)
+    # vars.form['is_active'].set(False)
 
     # set the payments
     for i in range(12):
@@ -520,10 +520,10 @@ def import_entry(entry):
         vars.form['include_taxes'].set(False)
 
     # set the active switch
-    if (entry['is_active'].lower() == 'true'):
-        vars.form['is_active'].set(True)
-    else:
-        vars.form['is_active'].set(False)
+    # if (entry['is_active'].lower() == 'true'):
+    #     vars.form['is_active'].set(True)
+    # else:
+    #     vars.form['is_active'].set(False)
 
     # close the popup once done
     vars.popups['history'].destroy()
