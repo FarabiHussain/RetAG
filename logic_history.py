@@ -1,4 +1,5 @@
 import os, csv, datetime
+import re
 
 
 ## write a newly created retainer information into the history
@@ -40,7 +41,9 @@ def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
                 elif (info_type == 'email_address_'):
                     client_emails.append(form[info_type + client_no])
                 elif (info_type == 'phone_number_'):
-                    client_phones.append(form[info_type + client_no])
+                    # remove phone number formatting like brackets, hyphens, whitespaces, +1's
+                    current_ph = re.sub("-*|\\(*|\\)*|\\s|[+1]", "_", form[info_type + client_no])
+                    client_phones.append(current_ph)
 
     # things to enter into the new entry
     history_entry = [os.environ['COMPUTERNAME']]
@@ -52,6 +55,10 @@ def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
     history_entry.append((";").join(client_emails))
     history_entry.append((";").join(client_phones))
     history_entry.append(str(isTaxIncluded).title())
+
+    # remove commas from strings as it interferes with the csv
+    for index, _ in enumerate(history_entry):
+        history_entry[index] = re.sub("[,]\\s*", "_", history_entry[index])
 
     for i in range(12):
         if (i < len(form['payment_list'])): 
