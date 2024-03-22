@@ -93,7 +93,7 @@ def init_form():
     ## switches
     vars.form['tax_switch'] = ctk.CTkSwitch(vars.root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['include_taxes'])
     vars.form['open_output_switch'] = ctk.CTkSwitch(vars.root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['open_output'])
-    vars.form['active_switch'] = ctk.CTkSwitch(vars.root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['is_active'])
+    # vars.form['active_switch'] = ctk.CTkSwitch(vars.root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['is_active'])
 
 
 ## render the form components
@@ -145,8 +145,8 @@ def render_form():
     vars.form['tax_switch'].place(x=660, y=y_offset)
     y_offset += 40
     vars.form['open_output_switch'].place(x=660, y=y_offset)
-    y_offset += 40
-    vars.form['active_switch'].place(x=660, y=y_offset)
+    # y_offset += 40
+    # vars.form['active_switch'].place(x=660, y=y_offset)
     y_offset += 40
 
     # buffer
