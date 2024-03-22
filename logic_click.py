@@ -77,7 +77,7 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
             vars.form["status"].set("Agreement created")
 
 
-## format retainers with multiple clients to show only their last names in the histoey window
+## format retainers with multiple clients to show only their last names in the history window
 def set_client_name(client_name):
     client_name_list = client_name.split(";")
 

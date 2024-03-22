@@ -71,7 +71,7 @@ def build_exe(cwd, ver):
     ## build the exe from py files
     os.system("cls")
     print("building exe...")
-    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=' + cwd + '\\assets\\icons\\logo.ico', '--name=RetAG'], stdout=DEVNULL, stderr=STDOUT)
+    check_call(['python', '-m', 'PyInstaller', 'main.py', '--noconsole', '--onefile', '-w', '--icon=' + cwd + '\\assets\\icons\\logo.ico', f'--name={((os.getcwd()).split("\\")[-1])}'], stdout=DEVNULL, stderr=STDOUT)
     print("done")
 
     ## after the exe is built, copy over the assets folder
@@ -88,9 +88,13 @@ def build_exe(cwd, ver):
 
     ## move the created zip file into the releases folder
     try:
+        filename = f"v{(".").join(ver)}.zip"
+        for f in glob.glob(cwd + "\\releases\\" + filename):
+            os.remove(f)
         for file in glob.glob(cwd + '\\v*.zip'):
             shutil.move(file, cwd + "\\releases")
-    except Exception as e: print("could not move zip file: ", e)
+    except Exception as e: 
+        print("could not move zip file: ", e)
 
     ## final cleanup of temporary files
     print("cleaning up...")
