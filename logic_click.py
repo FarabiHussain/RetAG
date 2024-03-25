@@ -448,9 +448,9 @@ def history_window():
             render_table(vars.popups['elem']['history_entries'])
 
             # the buttons at the bottom of the popup for operations
-            vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='import client', width=200, corner_radius=4, fg_color="#1F1E1E")
+            vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='select a client to import', width=200, corner_radius=4, fg_color="#1F1E1E")
             # vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
-            vars.popups['elem']['import_button'].place(x=400, y=2)
+            vars.popups['elem']['import_button'].place(x=0, y=2)
             # vars.popups['elem']['status_button'].place(x=605, y=2)
 
             ## render the popup

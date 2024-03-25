@@ -89,4 +89,6 @@ def retrieve():
         return None
     else:
         with open(history_dir + "\\history.csv", mode='r') as infile:
-            return list(csv.DictReader(infile))
+            temp = list(csv.DictReader(infile))
+            temp.reverse()
+            return temp
