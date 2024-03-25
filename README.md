@@ -9,7 +9,7 @@
 ## Build using script (recommended):
 ### Run `builder.py` with optional flags:
 - no flags will build the exe with the next minor build number.
-- `--selector` to show version selector in the terminal.
+- `--no-selector` to skip version selector and automatically build using the next minor build number.
 - `--deps` to install dependencies.
 
 ## Build manually:
