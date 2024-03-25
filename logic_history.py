@@ -3,7 +3,7 @@ import re
 
 
 ## write a newly created retainer information into the history
-def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
+def insert(form, isTaxIncluded, to_pdf):
 
     # set up the write directory
     history_dir = os.getcwd() + "\\write\\"
@@ -70,7 +70,6 @@ def insert(form, isTaxIncluded, isRetainerActive, to_pdf):
             history_entry.append("")
 
     history_entry.append("PDF" if to_pdf else "DOCX")
-    history_entry.append(str(isRetainerActive).title())
 
     with open(history_dir + "\\history.csv", "a") as history:
         history_entry = (',').join(history_entry)

@@ -58,13 +58,12 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
 
     isTaxIncluded = vars.form["include_taxes"].get()
     isOpenOutputActive = vars.form["open_output_switch"].get()
-    isRetainerActive = vars.form["active_switch"].get()
+    # isRetainerActive = vars.form["active_switch"].get()
 
     response = logic_form.generate(
         fill_info,
         isTaxIncluded,
         isOpenOutputActive,
-        isRetainerActive,
         to_printer,
         to_pdf,
         is_code_of_conduct,

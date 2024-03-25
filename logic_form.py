@@ -50,9 +50,9 @@ def validate(fill_info):
 
 
 ## runs the editor and displays message
-def generate(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
+def generate(fill_info, isTaxIncluded, isOpenOutputActive, to_printer, to_pdf, is_code_of_conduct):
     if (validate(fill_info) == True):
-        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct)
+        return editor.process(fill_info, isTaxIncluded, isOpenOutputActive, to_printer, to_pdf, is_code_of_conduct)
     else:
         print('not validated')
         return False

@@ -66,7 +66,7 @@ def init(form, isTaxIncluded, is_code_of_conduct):
 
 
 ## generate the docx with the input info
-def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printer, to_pdf, is_code_of_conduct):
+def process(form, isTaxIncluded, isOpenOutputActive, to_printer, to_pdf, is_code_of_conduct):
 
     init_data = None
     doc = None
@@ -92,7 +92,7 @@ def process(form, isTaxIncluded, isOpenOutputActive, isRetainerActive, to_printe
 
     # add the new retainer to the history csv
     try:
-        history.insert(form, isTaxIncluded, isRetainerActive, to_pdf)
+        history.insert(form, isTaxIncluded, to_pdf)
     except Exception as e:
         popup(title="", message='Exception while writing to history: ' + str(e), corner_radius=4)
         return False
