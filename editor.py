@@ -56,7 +56,7 @@ def init(form, isTaxIncluded, is_code_of_conduct):
 
         # redefine the input file and output filename for Retainer
         input_file = resource_path("assets\\templates\\" + retainer_filename)
-        output_file = "Retainer Agreement - " + (form["client_name_1"]) + ".docx"
+        output_file = f"Retainer - {form["client_name_1"]} - {form["application_type"]}.docx"
 
     return {
         'input_data': input_data, 
