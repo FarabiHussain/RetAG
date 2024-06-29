@@ -82,8 +82,11 @@ def set_client_name(client_name):
 
     if len(client_name_list) == 2:
         return (client_name_list[0].split(" "))[-1] + " & " + (client_name_list[1].split(" "))[-1]
+    elif len(client_name_list[0]) > 35:
+        shortened = client_name_list[0][0:35] + "..."
+        return shortened.lower().title()
 
-    return client_name_list[0]
+    return client_name_list[0].lower().title()
 
 
 ## render the table using the list of dicts passed
@@ -91,14 +94,16 @@ def render_table(history_entries):
     radio_var = StringVar(value="")
     radio_btn_text = StringVar(value="")
 
-    for i, entry in enumerate(history_entries):
+    w_list = [200,200,400,200]
+
+    for i, entry in enumerate(history_entries[0:50]):
 
         # only render columns if the line in the csv is not blank
         if (entry['created_by'] != '' and entry['created_date'] != ''):
 
             # add the radio button
             ctk.CTkRadioButton(
-                vars.popups['elem']['scr_frame'], width=1100/5, text=set_client_name(entry['client_name']), radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
+                vars.popups['elem']['scr_frame'], width=300, text=set_client_name(entry['client_name']), radiobutton_height=15, radiobutton_width=15, command=lambda:select(radio_var), variable=radio_var, value=entry
             ).grid(row=i, column=0, pady=5)
 
             # columns with data
@@ -108,14 +113,11 @@ def render_table(history_entries):
                 label_text = entry[info]
                 active_color = 'white'
 
-                # if (info == 'is_active'):
-                #     label_text = 'inactive' if entry[info].lower() == 'false' else 'active'
-                #     active_color = '#b02525' if entry[info].lower() == 'false' else '#1A8405'
                 if (info == 'application_fee'):
                     label_text = '$' + entry[info]
 
                 ctk.CTkLabel(
-                    vars.popups['elem']['scr_frame'], text=label_text, text_color=active_color, width=1100/5, fg_color=('transparent' if i%2==0 else '#292929')
+                    vars.popups['elem']['scr_frame'], text=label_text, text_color=active_color, width=w_list[j], fg_color=('transparent' if i%2==0 else '#292929')
                 ).grid(row=i, column=(j+1), padx=0, pady=5)
 
 
@@ -435,7 +437,7 @@ def history_window():
 
             vars.popups['history'] = ctk.CTkToplevel()
 
-            w = 1200
+            w = 1400
             h = 800
             x = (vars.screen_sizes['ws']/2) - (w/2)
             y = (vars.screen_sizes['hs']/2) - (h/2)
@@ -443,7 +445,7 @@ def history_window():
             header_frame = ctk.CTkFrame(vars.popups['history'], width=1123, height=35, fg_color='transparent')
             header_frame.place(x=40, y=755)
 
-            vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=1100, height=720)
+            vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=w-100, height=h-100)
             vars.popups['elem']['scr_frame'].place(x=40, y=10)
             render_table(vars.popups['elem']['history_entries'])
 
