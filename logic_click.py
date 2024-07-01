@@ -58,7 +58,6 @@ def generate_from_form(to_printer, to_pdf, is_code_of_conduct):
 
     isTaxIncluded = vars.form["include_taxes"].get()
     isOpenOutputActive = vars.form["open_output_switch"].get()
-    # isRetainerActive = vars.form["active_switch"].get()
 
     response = logic_form.generate(
         fill_info,
@@ -147,12 +146,6 @@ def select(str_var):
 
     # set the button states and colors based on the selected entry
     vars.popups['elem']['import_button'].configure(text="import " + set_client_name(entry['client_name']), fg_color='#383FBC', command=lambda:import_entry(entry))
-
-    # if (entry['is_active'].lower() == 'true'):
-    #     vars.popups['elem']['status_button'].configure(state='normal', text='set inactive', fg_color="#b02525", command=lambda:toggle_status(entry))
-    # else:
-    #     vars.popups['elem']['status_button'].configure(state='normal', text='set active', fg_color="#1A8405", command=lambda:toggle_status(entry))
-
 
 ##############################################################################################################
 ############################################### BUTTON HANDLERS ##############################################
@@ -326,6 +319,16 @@ def docx():
     generate_from_form(to_printer, to_pdf, is_code_of_conduct)
 
 
+def code_of_conduct_docx():
+    vars.form["status"].set("writing docx")
+
+    to_printer = False
+    to_pdf = False
+    is_code_of_conduct = True
+    generate_from_form(to_printer, to_pdf, is_code_of_conduct)
+
+
+
 ## save the retainer as pdf
 def pdf():
     vars.form["status"].set("creating pdf")
@@ -451,9 +454,7 @@ def history_window():
 
             # the buttons at the bottom of the popup for operations
             vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='select a client to import', width=200, corner_radius=4, fg_color="#1F1E1E")
-            # vars.popups['elem']['status_button'] = ctk.CTkButton(header_frame, text='status toggle', width=100, corner_radius=4, fg_color="#1F1E1E")
             vars.popups['elem']['import_button'].place(x=0, y=2)
-            # vars.popups['elem']['status_button'].place(x=605, y=2)
 
             ## render the popup
             vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
@@ -519,12 +520,6 @@ def import_entry(entry):
         vars.form['include_taxes'].set(True)
     else:
         vars.form['include_taxes'].set(False)
-
-    # set the active switch
-    # if (entry['is_active'].lower() == 'true'):
-    #     vars.form['is_active'].set(True)
-    # else:
-    #     vars.form['is_active'].set(False)
 
     # close the popup once done
     vars.popups['history'].destroy()

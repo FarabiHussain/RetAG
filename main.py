@@ -81,7 +81,7 @@ def init_form():
     vars.form['status_label'] = ctk.CTkLabel(vars.form['frame_status'], textvariable=vars.form['status'])
 
     ## buttons
-    vars.form['today_btn'] = ctk.CTkButton(vars.root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.today(), width=60, height=25)
+    vars.form['today_btn'] = ctk.CTkButton(vars.root, text="today", border_width=0, corner_radius=4, bg_color='#212121', command=click.today(), width=60, height=25)
     vars.form['500_btn'] = ctk.CTkButton(vars.root, text="$500", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.dollars(500), width=60, height=25)
     vars.form['1000_btn'] = ctk.CTkButton(vars.root, text="$1000", border_width=0, corner_radius=4, bg_color='#212121', command=lambda:click.dollars(1000), width=60, height=25)
     vars.form['plus_month_btn'] = ctk.CTkButton(vars.root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=lambda:click.add_month(), width=60, height=25)
@@ -92,13 +92,12 @@ def init_form():
     vars.form['print_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['print'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=lambda:click.print_file(printer_list, False, False), width=36, height=36)
     vars.form['docx_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['docx'], border_width=0, corner_radius=4, fg_color="#383FBC", command=lambda:click.docx(), width=36, height=36)
     vars.form['pdf_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['pdf'], border_width=0, corner_radius=4, fg_color="#b02525", command=lambda:click.pdf(), width=36, height=36)
-    vars.form['conduct_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['conduct'], border_width=0, corner_radius=4, fg_color="#1A8405", command=lambda:click.print_file(printer_list, False, True), width=120, height=36)
+    vars.form['conduct_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['conduct'], border_width=0, corner_radius=4, fg_color="#1A8405", command=lambda:click.code_of_conduct_docx(), width=120, height=36)
     vars.form['history_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['history'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.history_window(), width=36, height=36)
 
     ## switches
     vars.form['tax_switch'] = ctk.CTkSwitch(vars.root, text="Add Taxes", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['include_taxes'])
     vars.form['open_output_switch'] = ctk.CTkSwitch(vars.root, text="Open Output", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['open_output'])
-    # vars.form['active_switch'] = ctk.CTkSwitch(vars.root, text="Set Active", border_width=0, corner_radius=4, onvalue=True, offvalue=False, variable=vars.form['is_active'])
 
 
 ## render the form components

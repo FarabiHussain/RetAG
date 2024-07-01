@@ -113,7 +113,7 @@ def process(form, isTaxIncluded, isOpenOutputActive, to_printer, to_pdf, is_code
             os.remove(output_dir + init_data['output_file'])
             init_data['output_file'] = init_data['output_file'].replace(".docx", ".pdf")
 
-        if to_printer or is_code_of_conduct:
+        if to_printer:
             win32print.SetDefaultPrinter(to_printer)
             win32api.ShellExecute(0, "print", output_dir + init_data['output_file'], None,  ".",  0)
 
