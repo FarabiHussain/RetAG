@@ -8,15 +8,13 @@ from CTkMessagebox import CTkMessagebox as popup
 def validate(fill_info):
     valid_date_regex = '^[0-3]{0,1}[0-9]{1}' + '/' + '[0-2]{0,1}[0-9]{1}' + '/' + '20[0-9]{1}[0-9]{1}$'
 
-    for key, val in fill_info.items():
+    for key, _ in fill_info.items():
 
         if (key == 'application_type'):
-            invalid_chars = ["<", ">", ":", "\"", "/", "\\", "|", "?", "*"]
-            for curr_char in invalid_chars:
+            for curr_char in ["<", ">", ":", "\"", "/", "\\", "|", "?", "*"]:
                 if (curr_char in fill_info[key]):
                     popup(icon="cancel", title="Error", message=f"The character '{curr_char}' is not allowed\nin the application type field", corner_radius=4)
                     return False
-
 
         if (("_2" not in key) and len(fill_info[key]) < 1):
             popup(icon="cancel", title="Error", message="Payment, application, and at least Client 1 information needs to be filled", corner_radius=4)

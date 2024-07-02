@@ -31,6 +31,7 @@ def init():
         "conduct": None,
         "testData": None,
         "testPrnt": None,
+        "payauth": None,
         "printConduct": None,
         "printRetainer": None,
     }
