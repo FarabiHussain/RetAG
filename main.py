@@ -19,7 +19,7 @@ def init_form():
     w = 800
     h = 540
     x = (vars.screen_sizes['ws']/2) - (w/2)
-    y = (vars.screen_sizes['hs']/2) - (h/2) - 170
+    y = (vars.screen_sizes['hs']/2) - (h/2)
 
     vars.root.geometry('%dx%d+%d+%d' % (w, h, x, y))
 
@@ -88,7 +88,7 @@ def init_form():
     vars.form['plus_month_btn'] = ctk.CTkButton(vars.root, text="+1 month", border_width=0, corner_radius=4, bg_color='#343638', command=lambda:click.add_month(), width=60, height=25)
     vars.form['advance_btn'] = ctk.CTkButton(vars.root, text="advance", border_width=0, corner_radius=4, bg_color='#343638', command=lambda:click.advance(), width=60, height=25)
     vars.form['test_data_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['testData'], border_width=1, corner_radius=4, fg_color='#1F1E1E', command=lambda:click.test_data(), width=120, height=36)
-    vars.form['send_to_auth_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['payauth'], border_width=0, corner_radius=4, fg_color='#7f48ba', command=lambda:check_call(["PayAuth.exe", "--import"]), width=120, height=36)
+    vars.form['send_to_auth_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['payauth'], border_width=0, corner_radius=4, fg_color='#7f48ba', command=lambda:click.open_payAuth(), width=120, height=36)
     vars.form['clear_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['clear'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.reset(), width=36, height=36)
     vars.form['output_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['folder'], border_width=0, corner_radius=4, fg_color='#313131', command=lambda:click.output(), width=36, height=36)
     vars.form['print_btn'] = ctk.CTkButton(vars.root, text="", image=vars.icons['print'], border_width=0, corner_radius=4, fg_color="#e07b00", text_color="black", command=lambda:click.print_file(printer_list, False, False), width=36, height=36)
@@ -159,7 +159,7 @@ def render_form():
     buffer = 316
 
     y_offset += (buffer - y_offset)
-    # vars.form['test_data_btn'].place(x=660, y=y_offset)
+    vars.form['test_data_btn'].place(x=660, y=y_offset)
     # y_offset += 42
     y_offset += 42
     vars.form['history_btn'].place(x=660, y=y_offset)

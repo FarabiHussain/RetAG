@@ -1,4 +1,5 @@
 import os
+from subprocess import check_call
 import customtkinter as ctk
 import datetime as dt
 import variables as vars
@@ -95,7 +96,7 @@ def render_table(history_entries):
 
     w_list = [200,200,400,200]
 
-    for i, entry in enumerate(history_entries[0:50]):
+    for i, entry in enumerate(history_entries):
 
         # only render columns if the line in the csv is not blank
         if (entry['created_by'] != '' and entry['created_date'] != ''):
@@ -427,8 +428,33 @@ def print_test(to_printer):
         os.remove(file_path)
 
 
+def open_payAuth():
+
+    retrieved = history.retrieve()
+
+    if retrieved is None or len(retrieved) == 0:
+        popup(
+            title="Empty History",
+            message="Empty History.\n\nPlease create agreements to import to PayAuth.",
+            corner_radius=4,
+        )
+
+    else:
+        try:
+            vars.root.withdraw()
+            check_call(["PayAuth.exe", "--import"])
+        except Exception as e:
+            popup(
+                title="payAuth error",
+                message=e,
+                corner_radius=4,
+            )
+
+        vars.root.deiconify()
+
+
 ## display the popup containing the history
-def history_window():
+def history_window(complete_history=False):
 
     vars.popups['elem']['history_entries'] = history.retrieve()
 
@@ -450,11 +476,17 @@ def history_window():
 
             vars.popups['elem']['scr_frame'] = ctk.CTkScrollableFrame(vars.popups['history'], width=w-100, height=h-100)
             vars.popups['elem']['scr_frame'].place(x=40, y=10)
-            render_table(vars.popups['elem']['history_entries'])
+
+            if not complete_history:
+                render_table((vars.popups['elem']['history_entries'])[0:30])
+            else:
+                render_table((vars.popups['elem']['history_entries']))
 
             # the buttons at the bottom of the popup for operations
             vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='select a client to import', width=200, corner_radius=4, fg_color="#1F1E1E")
             vars.popups['elem']['import_button'].place(x=0, y=2)
+            vars.popups['elem']['show_all_button'] = ctk.CTkButton(header_frame, text='show complete history', width=200, corner_radius=4, fg_color="#1F1E1E", command=lambda:show_complete_history())
+            vars.popups['elem']['show_all_button'].place(x=220, y=2)
 
             ## render the popup
             vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
@@ -468,6 +500,11 @@ def history_window():
 
     else:
         popup(title="", message='No entries in history', corner_radius=4)
+
+
+def show_complete_history():
+    vars.popups['history'].destroy()
+    history_window(complete_history=True)
 
 
 ## import the entry into the form
