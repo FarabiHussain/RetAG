@@ -485,8 +485,10 @@ def history_window(complete_history=False):
             # the buttons at the bottom of the popup for operations
             vars.popups['elem']['import_button'] = ctk.CTkButton(header_frame, text='select a client to import', width=200, corner_radius=4, fg_color="#1F1E1E")
             vars.popups['elem']['import_button'].place(x=0, y=2)
-            vars.popups['elem']['show_all_button'] = ctk.CTkButton(header_frame, text='show complete history', width=200, corner_radius=4, fg_color="#1F1E1E", command=lambda:show_complete_history())
-            vars.popups['elem']['show_all_button'].place(x=220, y=2)
+
+            if complete_history is False:
+                vars.popups['elem']['show_all_button'] = ctk.CTkButton(header_frame, text='show complete history', width=200, corner_radius=4, fg_color="#1F1E1E", command=lambda:show_complete_history())
+                vars.popups['elem']['show_all_button'].place(x=220, y=2)
 
             ## render the popup
             vars.popups['history'].geometry('%dx%d+%d+%d' % (w, h, x, y))
